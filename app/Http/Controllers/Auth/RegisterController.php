@@ -49,9 +49,21 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'surname' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'date_of_birth' => 'required|string|max:10',
+            'gender' => 'required|string|max:1',
+            'country' => 'required|string|max:255',
             'password' => 'required|string|min:6|confirmed',
+            'date_of_birth' => 'required|string',
+            'tel' => 'required|string|min:10|max:10',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'province' => 'required|string|max:255',
+            'id_number' => 'required|string|min:13|max:13'
+
+            
         ]);
     }
 
@@ -64,9 +76,21 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         return User::create([
-            'name' => $data['name'],
+            'firstname' => $data['firstname'],
+            'surname' => $data['surname'],
             'email' => $data['email'],
+            'date_of_birth' => $data['date_of_birth'], //new column
+            'gender' => $data['gender'], //new
+            'country' => $data['country'], //new column
             'password' => Hash::make($data['password']),
+            'tel' => $data['tel'],
+            'address' => $data['address'],
+            'city' => $data['city'],
+            'province' => $data['province'],
+            'id_number' => $data['id_number'],
+            'last_login' => strtotime("now"),
+            'onboarding' => 'b',
+            'status' => 'y'
         ]);
     }
 }

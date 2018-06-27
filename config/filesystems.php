@@ -54,6 +54,12 @@ return [
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
         ],
+        'vod' => [
+            'driver' => 'local',
+            'root' => storage_path('C:/wowza/content'),
+            'url' => env('APP_URL').'/video-storage',
+            'visibility' => 'public',
+        ],
 
         's3' => [
             'driver' => 's3',

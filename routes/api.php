@@ -16,3 +16,9 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('/getmsg','AjaxController@index');
+
+Route::get('/fixture', 'AjaxController@get_scores');
+
+Route::get('/stream-streamfiles', 'AjaxController@get_streamfile_status');
