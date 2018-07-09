@@ -236,9 +236,9 @@
                         <div class="col-10">
                             <select class="form-control{{ $errors->has('team_a') ? ' is-invalid' : '' }}" autocomplete="off" name="team_a" id="target_a">
                             @if(old('team_a'))
-                            <option disabled value=""> -- Select Second Team -- </option>
+                            <option disabled value=""> -- Select First Team -- </option>
                             @else
-                            <option disabled value="" selected="selected"> -- Select Second Team -- </option>
+                            <option disabled value="" selected="selected"> -- Select First Team -- </option>
                             @endif                            
                             @foreach($teams as $team)
                             @if(old('team_a') == $team->name)

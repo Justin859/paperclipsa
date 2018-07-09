@@ -143,6 +143,31 @@
     </form>
 </div>
 <!-- End of Modal -->
+
+<!-- Modal for buyying stream -->
+<div id="buyStream" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Purchase Subscription or Credits</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>In order to gain access to on-demand videos and live streams</strong></p>
+                <p>You now have the option to pay a monthly subscription for a single venue(R30.00/mo) or full Access(R60.00/mo) to all selected venues.</p>
+                <p>Buying credits and using tokens to access videos is still an available option at <strong>5</strong> credits per video.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="/subscription/checkout" class="btn btn-info">Purchase Subscription&nbsp;&nbsp;<span class="fas fa-credit-card"></span></a>
+                <a href="/buy" class="btn btn-warning">Purchase Credits&nbsp;&nbsp;<span class="fas fa-coins"></span></a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Modal -->
 @endsection
 @section('scripts')
 
@@ -211,7 +236,10 @@ $( document ).ready(function() {
                 console.log(response);
                 $("#scoreA").html(response.data.team_a_goals);
                 $("#scoreB").html(response.data.team_b_goals);
-                setTimeout(function(){get_scores();}, 10000);
+                setTimeout(function(){get_scores();}, 5000);
+            },
+            error: function(response) {
+                console.log(response);
             }
         });  
     }    

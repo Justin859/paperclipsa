@@ -169,10 +169,14 @@
                     </div>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="/new/live-now">Live Now <span class="sr-only"></span></a>
+                    <a class="nav-link" href="/live-now">Live Now <span class="sr-only"></span></a>
                 </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="/new/on-demand">On Demand <span class="sr-only"></span></a>
+                <li class="nav-item dropdown active">
+                    <a class="nav-link dropdown-toggle" href="#" id="ondemandDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">On Demand <span class="sr-only"></span></a>
+                    <div class="dropdown-menu" aria-labelledby="ondemandDropdown">
+                        <a class="dropdown-item" href="/on-demand">Indoor Soccer</a>
+                        <a class="dropdown-item" href="/on-demand/squash">Squash</a>
+                    </div>
                 </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="/contact">Contact Us <span class="sr-only"></span></a>

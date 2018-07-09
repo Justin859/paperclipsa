@@ -116,7 +116,6 @@ class RefereeController extends Controller
             'camera_port' => 'required'
         ]);
 
-        //Note: add field->port number instead of string. 
         $uri = "rtsp://". $venue->username .":". $venue->password ."@" . $venue->venue_ip .":" .$request->camera_port. "/h264"; // ex. rtsp://admin:wel0v3mar@196.40.191.23:555/h264
         $stream_file_name = $request->name;
         $application_name = $venue->wow_app_name;
@@ -146,7 +145,7 @@ class RefereeController extends Controller
                 $recorderState= "Waiting for stream";
                 $defaultRecorder= true;
                 $segmentationType= "None";
-                $outputPath= "C:/wowza/content/";
+                $outputPath= env('VOD_STORAGE_PATH');
                 $baseFile= $stream_file_name.".mp4";
                 $fileFormat= "MP4"; // or FLV
                 $fileVersionDelegateName= "com.wowza.wms.livestreamrecord.manager.StreamRecorderFileVersionDelegate";
@@ -177,7 +176,7 @@ class RefereeController extends Controller
                         $new_stream = \App\Stream::create(['name' => $request->name, 'stream_type' => 'none', 'field_port' => $request->camera_port,
                                                            'venue_id' => $venue->id, 'uri' => 'rtsp://'.$venue->username.':'.$venue->password.'@'.$venue->venue_ip.':'.$request->camera_port.'/h264',
                                                            'http_url' => 'http://192.168.0.69:1935/'.$venue->wow_app_name.'/'.$request->name.'.stream_source/playlist.m3u8',
-                                                           'storage_location' => 'VOD_STORAGE_2']);
+                                                           'storage_location' => "VOD_STORAGE_1"]);
                         if($request->fixture_id)
                         {
                             $update_fixture = \App\Fixture::find($request->fixture_id);
@@ -213,7 +212,7 @@ class RefereeController extends Controller
             \Session::flash('error', $request->name." There is an error creating the stream file.");
         }
         
-     return view('referee.referee_dashboard', ['fixtures' => $fixtures]);   
+     return redirect()->to('/referee/dashboard')->send();   
     }
 
     public function stopStream(Request $request)
@@ -290,9 +289,8 @@ class RefereeController extends Controller
         $fixture = \App\Fixture::find($id);
         $stream = \App\Stream::find($fixture->stream_id);
         $venue = \App\Venue::find($fixture->venue_id);
-        $teams = \App\Team::where('active_status', 'active')->orderBy('name', 'ASC')->get();
 
-        return view('referee.view_stream', ['stream' => $stream, 'fixture' => $fixture, 'venue' => $venue, 'teams' => $teams]);
+        return view('referee.view_stream', ['stream' => $stream, 'fixture' => $fixture, 'venue' => $venue]);
     }
 
     public function updateScores(Request $request)

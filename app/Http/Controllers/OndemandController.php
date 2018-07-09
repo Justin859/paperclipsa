@@ -131,6 +131,61 @@ class OndemandController extends Controller
                 $stream_available = false;
             }
 
+        } else if ( $video_type == 'squash' ) {
+            $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+
+            if ($user_points >= 10)
+            {
+                $sufficient_points = true;
+            }
+    
+            if ($user_streams and $sufficient_points)
+            {
+                $account_balance->balance_value = (string)((int)$user_points - 10);
+                if($user_streams->stream_ids)
+                {
+                    $user_streams->stream_ids = $user_streams->stream_ids.",".$stream_id;
+                } else {
+                    $user_streams->stream_ids = $stream_id;
+                }
+    
+                $user_streams->save();
+                $account_balance->save();
+    
+                $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+                $user_purchased_streams = $user_streams->stream_ids;
+                $purchased_streams_array = explode(',', $user_purchased_streams);
+    
+                if (in_array((string)$stream_id, $purchased_streams_array))
+                {
+                    $stream_available = true;
+
+                    return redirect()->to($redirect_url);
+                }
+    
+            } else if ($user_points and $sufficient_points) {
+                // Create Row for user streams
+                $new_user_streams = \App\SquashUserStream::create(['user_id' => $user->id, 'stream_ids' => $stream_id]);
+                $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+                $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+    
+                $account_balance->balance_value = (string)((int)$user_points - 10);
+    
+                $account_balance->save();
+    
+                $user_purchased_streams = $user_streams->stream_ids;
+                $purchased_streams_array = explode(',', $user_purchased_streams);
+                
+                if (in_array((string)$stream_id, $purchased_streams_array))
+                {
+                    $stream_available = true;
+                    return redirect()->to($redirect_url);
+                }
+    
+            } else {
+                // Exception for no account balance
+                $stream_available = false;
+            }
         }
 
     }
@@ -150,6 +205,13 @@ class OndemandController extends Controller
         
         
         return view('public.on_demand', ['vods' => $vods, 'channels' => $channels, 'request' => $request]);
+    }
+
+    public function index_squash(Request $request)
+    {
+        $vods = \App\SquashStream::orderBy('created_at', 'desc')->where('stream_type', 'vod')->paginate(30);
+
+        return view('public.on_demand_squash', ['vods' => $vods]);
     }
 
     public function vod_watch($id, $streamfile_name)
@@ -179,7 +241,8 @@ class OndemandController extends Controller
             $stream_available = false;
         }
 
-        return view('public.on_demand_view', ['vod' => $vod,
+        return view('public.on_demand_view', [
+         'vod' => $vod,
          'user_purchased_streams' => $user_purchased_streams,
          'stream_available' => $stream_available,
          'fixture' => $fixture,
@@ -189,10 +252,50 @@ class OndemandController extends Controller
 
     }
 
-    public function vod_purchase(Request $request, $vod_id, $vod_name)
+    public function vod_squash_watch($id, $streamfile_name)
     {
         $user = Auth::user();
-        $vod = \App\Stream::where(['id' => $vod_id, 'name' => $vod_name])->first();
+        $vod = \App\SquashStream::where(['id' => $id, 'name' => $streamfile_name])->first();
+        $current_venue = \App\Venue::where('id', $vod->venue_id)->first();
+        $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+        $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+        $fixture = \App\SquashFixture::where("squash_stream_id", $vod->id)->first();
+        $vods_from_venue = \App\SquashStream::where('venue_id', $vod->venue_id)->paginate(15);
+        $rounds = json_decode($fixture->rounds, true);
+        $round_points = json_decode($fixture->round_points, true);
+
+        $stream_available = false;
+
+        if($user_streams)
+        {
+            $user_purchased_streams = $user_streams->stream_ids;
+            $purchased_streams_array = explode(',', $user_purchased_streams);
+            if (in_array((string)$vod->id, $purchased_streams_array))
+            {
+                $stream_available = true;
+            }
+
+        } else {
+            $user_purchased_streams = false;
+            $stream_available = false;
+        }
+
+        return view('public.on_demand_squash_view', [
+            'vod' => $vod,
+            'fixture' => $fixture,
+            'rounds' => $rounds,
+            'round_points' => $round_points,
+            'vods_from_venue' => $vods_from_venue,
+            'current_venue' => $current_venue,
+            'account_balance' => $account_balance,
+            'user_purchased_streams' => $user_purchased_streams,
+            'stream_available' => $stream_available]);
+    }
+
+    public function vod_purchase(Request $request)
+    {
+        $user = Auth::user();
+        $vod = \App\Stream::where(['id' => $request->vod_id, 'name' => $request->vod_name])->first();
         $user_streams = \App\UserStreams::where('user_id', $user->id)->first();
         $current_venue = \App\Venue::where('id', $vod->venue_id)->first();
         $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
@@ -202,8 +305,24 @@ class OndemandController extends Controller
         $stream_available = false;
         $sufficient_points = false;
 
-        return $this->purchase_access('/on-demand/'.$vod_id.'/'.$vod_name, 'action_sport', $vod_id, $vod_name);
+        return $this->purchase_access('/on-demand/'.$request->vod_id.'/'.$request->vod_name, 'action_sport', $request->vod_id, $request->vod_name);
 
+    }
+
+    public function vod_squash_purchase(Request $request)
+    {    
+        $user = Auth::user();
+        $vod = \App\SquashStream::where(['id' => $request->vod_id, 'name' => $request->vod_name])->first();
+        $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+        $current_venue = \App\Venue::where('id', $vod->venue_id)->first();
+        $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+        $fixture = \App\SquashFixture::where("squash_stream_id", $vod->id)->first();
+        $vods_from_venue = \App\SquashStream::where('venue_id', $vod->venue_id)->paginate(15);
+
+        $stream_available = false;
+        $sufficient_points = false;
+
+        return $this->purchase_access('/on-demand/squash/'.$request->vod_id.'/'.$request->vod_name, 'squash', $request->vod_id, $request->vod_name);
     }
 
     public function ondemand_event_watch($id, $event_name)

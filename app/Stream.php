@@ -16,5 +16,5 @@ class Stream extends Model
         return $this->hasOne('\App\Fixture', 'stream_id');
     }
 
-    protected $fillable = ['name', 'thumbnail', 'stream_type', 'venue_id', 'fixture_id', 'field_name', 'field_port', 'uri', 'http_url',];
+    protected $fillable = ['name', 'thumbnail', 'stream_type', 'venue_id', 'fixture_id', 'field_name', 'field_port', 'uri', 'http_url', 'storage_location'];
 }

@@ -75,5 +75,135 @@ class AjaxController extends Controller {
     ]);
 
    }
+
+   public function update_squash_score(Request $request)
+   {
+       $fixture = \App\SquashFixture::find($request->fixture_id);
+
+       $round_points = json_decode($fixture->round_points, true);
+       $points = json_decode($fixture->points, true);
+       $rounds = json_decode($fixture->rounds, true);
+
+       $current_round = count($rounds);
+
+       $player_current_score = $round_points[$current_round][$request->player];
+
+       if ( $request->point == 'add' )
+       {
+        $round_points[$current_round][$request->player]++;
+        $points[$current_round][$request->player][$player_current_score+1] = date('Y-m-d h:i:s');
+
+       } else if ( $request->point == 'subtract' ) {
+        $round_points[$current_round][$request->player]--;
+        unset($points[$current_round][$request->player][$player_current_score+1]);
+       } else {
+           return response(500);
+       }
+
+       $fixture->round_points = json_encode($round_points);
+       $fixture->points = json_encode($points);
+       $response = $fixture->save();
+
+       return response()->json(['data' => $response]);
+   }
+
+   public function get_squash_score(Request $request)
+   {
+       $fixture = \App\SquashFixture::find($request->fixture_id);
+       $round_points = json_decode($fixture->round_points, true);
+       $points = json_decode($fixture->points, true);
+       $rounds = json_decode($fixture->rounds, true);
+
+       $current_round = count($rounds);
+
+
+       return response()->json(['data' => $round_points]);
+
+   }
+
+   public function get_squash_score_odv(Request $request)
+   {
+    $fixture = \App\SquashFixture::find($request->fixture_id);
+    $current_duration = gmdate("H:i:s", $request->current_duration);
+    $video_duration = gmdate("H:i:s", (int) $request->video_duration);
+    $rounds = json_decode($fixture->rounds, true);
+    $round_points = json_decode($fixture->round_points, true);
+    $current_score = ["1" =>  ["player_1_score" => 0, "player_2_score" => 0, "time_duration" => ""]];
+    $rally_times = [];
+    $round_start_time = $rounds["1"]["rallies"]["1"]["rally_start_time"];
+
+    $total_rally_time = strtotime("00:00:00");
+
+    foreach($rounds as $round)
+    {
+
+        foreach($round['rallies'] as $rally)
+        {
+            $single_rally_duration = date_diff(date_create($rally["rally_start_time"]), date_create($rally["rally_end_time"]))->format('%H:%I:%s');
+            $total_rally_time += strtotime($single_rally_duration) - strtotime("00:00:00");
+        }
+    }
+
+    $total_scored = 0;
+
+    foreach($round_points as $round_points)
+    {
+        $total_scored += $round_points["player_1"];
+        $total_scored += $round_points["player_2"];
+    }
+
+    $total_rally_time = date('H:i:s', $total_rally_time);
+    $time_lost = date_diff(date_create($video_duration), date_create($total_rally_time))->format('%H:%I:%s');
+    $time_to_add = gmdate("H:i:s", (strtotime($time_lost) - strtotime("00:00:00")) / $total_scored);
+
+    foreach($rounds as $round_key=>$round)
+    {
+        foreach($round["rallies"] as $rally_key=>$rally)
+        {   
+            $start_time = date_create($round_start_time);
+            $rally_end_time = date_create($rally["rally_start_time"]);
+            $rally_duration = date_diff($start_time, $rally_end_time)->format('%H:%I:%s');
+            $single_rally_duration = date_diff(date_create($rally["rally_start_time"]), date_create($rally["rally_end_time"]))->format('%H:%I:%s');
+
+            if($rally_key != 1 and $rally["rally_start_time"] != "")
+            {
+                
+                    $time = strtotime($rally_times[$round_key][$rally_key -1]) + strtotime($single_rally_duration) - strtotime('00:00:00') + (strtotime($time_to_add) - strtotime('00:00:00'));
+                    $rally_times[$round_key][$rally_key] = date("H:i:s", $time);
+                
+                
+            } else if($rally["rally_start_time"] != "") {
+                if ( $round_key != 1 ) {
+                    $last_time = $rally_times[$round_key-1][count($rally_times[$round_key-1])];
+                    $time = strtotime($single_rally_duration) + (strtotime($last_time) - strtotime('00:00:00')) + (strtotime($time_to_add) - strtotime('00:00:00'));
+                    $rally_times[$round_key][$rally_key] = date("H:i:s", $time);
+
+                } else {
+                    $time = strtotime($single_rally_duration) + (strtotime($time_to_add) - strtotime('00:00:00'));
+                    $rally_times[$round_key][$rally_key] = date('H:i:s', $time);
+                }
+            } 
+
+        }
+        
+    }
+
+    foreach($rounds as $round_key=>$round)
+    {
+        foreach($round["rallies"] as $rally_key=>$rally)
+        {   
+            if($rally["rally_start_time"] != "")
+            {
+                if($current_duration >= $rally_times[$round_key][$rally_key]) 
+                {
+                    $current_score[$round_key]["player_1_score"] = $rally["player_1_score"];
+                    $current_score[$round_key]["player_2_score"] = $rally["player_2_score"];
+                    $current_score[$round_key]["time_duration"] = $rally_times[$round_key][$rally_key];
+                }
+            }
+        }
+    }
+    return response()->json(['data' => $current_score]);
+   }
    
 }

@@ -139,9 +139,10 @@ class LiveNowController extends Controller
     // Views
     public function index()
     {
-        $live_streams = \App\Stream::all();
+        $live_streams = \App\Stream::where('stream_type', 'live')->get();
+        $squash_live_streams = \App\SquashStream::where('stream_type', 'live')->get();
 
-        return view('public.live_now', ['live_streams' => $live_streams]);
+        return view('public.live_now', ['live_streams' => $live_streams, 'squash_live_streams' => $squash_live_streams]);
     }
 
     public function watch($stream_id, $stream_name)
@@ -178,6 +179,30 @@ class LiveNowController extends Controller
          'more_live_streams' => $more_live_streams,
          'current_venue' => $current_venue,
          'account_balance' => $account_balance]);
+    }
+
+    public function watch_squash($squash_stream_id, $stream_name)
+    {
+
+        $user = Auth::user();
+        $live = \App\SquashStream::where(['id' => $squash_stream_id, 'name' => $stream_name])->first();
+        $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+        $current_venue = \App\Venue::where('id', $live->venue_id)->first();
+        $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+        $fixture = \App\SquashFixture::where("squash_stream_id", $live->id)->latest()->first();
+        $more_live_streams = \App\SquashStream::all();        
+        $rounds = json_decode($fixture->rounds, true);
+        $round_points = json_decode($fixture->round_points, true);
+
+        return view('public.live_now_squash_view', ['live' => $live,
+        // 'user_purchased_streams' => $user_purchased_streams,
+        // 'stream_available' => $stream_available,
+        'fixture' => $fixture,
+        'more_live_streams' => $more_live_streams,
+        'current_venue' => $current_venue,
+        'account_balance' => $account_balance,
+        'rounds' => $rounds,
+        'round_points' => $round_points]);
     }
 
     public function vod_purchase(Request $request, $vod_id, $vod_name)

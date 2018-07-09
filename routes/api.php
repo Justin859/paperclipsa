@@ -22,3 +22,8 @@ Route::post('/getmsg','AjaxController@index');
 Route::get('/fixture', 'AjaxController@get_scores');
 
 Route::get('/stream-streamfiles', 'AjaxController@get_streamfile_status');
+
+Route::post('/update-squash-score', 'AjaxController@update_squash_score');
+Route::get('/get-squash-score', 'AjaxController@get_squash_score'); // live
+
+Route::post('/get-squash-score-odv', 'AjaxController@get_squash_score_odv'); // on demand video

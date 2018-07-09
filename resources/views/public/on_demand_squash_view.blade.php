@@ -62,24 +62,39 @@
         </video>
         </div>
     </div>
+    
+    <!-- Scoreboard Goes Here -->
     <div class="row">
-        <div class="col-md-4 team-container"><h4>{{$fixture->team_a}}</h4></div>
-        <div class="col-md-4 score-container">{{$fixture->team_a_goals}} - {{$fixture->team_b_goals}}</div>
-        <div class="col-md-4 team-container"><h4>{{$fixture->team_b}}</h4></div>
-    </div>
-    <div class="row">
-        <div class="col-sm-12" style="padding: 0px;">
-            <h2 class="main-heading" align="left">{{str_replace("_", " ",$vod->name)}}</h2>
-            <p  class="fixture-date-time" align="left">{{$fixture->date_time}}</p>
-            <p class="fixture-venue" align="left"><a class="venue-link" href="#">{{"@" . $current_venue->name}}</a></p>
+        <div class="col-md-8 offset-md-2" style="padding: 0px;">
+            <table class="table table-dark  text-center">
+                <thead>
+                    <tr>
+                        <th scope="col">Round</th>
+                        <th scope="col">{{$fixture->player_1}}</th>
+                        <th scope="col">{{$fixture->player_2}}</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+            <tbody id="table-data">
+                @foreach($rounds as $key=>$round)
+                    <tr>
+                        <td>{{$key}}</td>
+                        <td>{{$round_points[$key]["player_1"]}}</td>
+                        <td>{{$round_points[$key]["player_2"]}}</td>
+                        <td></td>
+                    </tr>
+                @endforeach
+            </tbody>
+            </table>
         </div>
     </div>
+
     @else
     <div class="row" style="background-color: #000000;">
         <div class="col-md-8 offset-md-2" style="padding: 0px;">
             <div style="width:100%; height:454.35px; padding:0 0 56.25% 0 0; background-color:black; color:white;">
                 <div class="btn-group" style="postion:absolute; top:45%;" role="group" aria-label="User Actions">
-                @if($account_balance)
+                @if($account_balance->balance_value >= 10)
                     <button id="purchaseButton" class="btn btn-outline-warning" data-toggle="modal" data-target="#areYouSure">Use Credits&nbsp;&nbsp;<span class="fas fa-money-bill"></span></button>
                 @else
                     <button id="purchaseButton" class="btn btn-outline-warning disabled" aria-disabled="true">Use Credits&nbsp;&nbsp;<span class="fas fa-money-bill"></span></button>           
@@ -118,14 +133,14 @@
             @endif
         @endforeach
     </div>
-
+    <hr />
 </div>
 
 @endsection
 @section('modal')
 <!-- Modal for purchase request -->
 <div id="areYouSure" class="modal" tabindex="-1" role="dialog">
-    <form method="post" action="/on-demand/purchase">
+    <form method="post" action="/on-demand/squash/purchase">
     {{ csrf_field() }}
     <input type="number" name="vod_id" hidden="true" value="{{$vod->id}}" readonly/>
     <input type="text" name="vod_name" hidden="true" value="{{$vod->name}}" readonly/>
@@ -138,7 +153,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>{{$pricing = \App\Pricing::find(1)->match}}</strong> Credits will be deducted</p>
+                    <p><strong>10</strong> Credits will be deducted</p>
                     <p>Are You Sure ?</p>
                 </div>
                 <div class="modal-footer">
@@ -163,7 +178,7 @@
             <div class="modal-body">
                 <p><strong>In order to gain access to on-demand videos and live streams</strong></p>
                 <p>You now have the option to pay a monthly subscription for a single venue(R30.00/mo) or full Access(R60.00/mo) to all selected venues.</p>
-                <p>Buying credits and using tokens to access videos is still an available option at <strong>5</strong> credits per video.</p>
+                <p>Buying credits and using tokens to access videos is still an available option at <strong>10</strong> credits per video.</p>
             </div>
             <div class="modal-footer">
                 <a href="/subscription/checkout" class="btn btn-info">Purchase Subscription&nbsp;&nbsp;<span class="fas fa-credit-card"></span></a>
@@ -202,7 +217,7 @@ $( document ).ready(function() {
     var player = videojs('video-id', {"controls": true, "autoplay": true, "fluid": true, "preload": "auto"});
 
     player.src({
-    src: encodeURI('http://41.185.22.138:1935/'+storage_location+'/mp4:'+video_name+'.mp4/playlist.m3u8'),
+    src: encodeURI('http://192.168.0.69:1935/'+storage_location+'/mp4:'+video_name+'.mp4/playlist.m3u8'),
     type: 'application/x-mpegURL',
     withCredentials: false
     });
@@ -212,6 +227,38 @@ $( document ).ready(function() {
     changeDuration:10000
     });
 
+player.on('loadedmetadata', function() {
+    var duration = player.duration();
+    console.log(duration);
+});
+
+    function get_duration() {
+        $.ajax({
+            type: "POST",
+            url: "/api/get-squash-score-odv?fixture_id=<?php echo $fixture->id ?>&current_duration=" + player.currentTime() + "&video_duration=" + player.duration(), 
+            async: false,
+            success: function(response) {
+                console.log(response["data"]);
+                var x = "";
+                for (i in response["data"]) {
+                    x += "<tr>";
+                    x += "<td>" + i + "</td>";
+                    x += "<td>" + response["data"][i]["player_1_score"] + "</td>";
+                    x += "<td>" + response["data"][i]["player_2_score"] + "</td>";
+                    x += "</tr>";
+                }
+                document.getElementById("table-data").innerHTML = x;
+                setTimeout(function(){get_duration();}, 1500);
+
+            },
+            error: function(response) {
+                console.log(response);
+            }
+
+        });  
+    }
+
+    get_duration();
 });
 
 </script>

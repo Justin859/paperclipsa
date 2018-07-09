@@ -22,33 +22,51 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::post('/on-demand/{id}/{vod_name}/', 'OndemandController@vod_purchase')->name('on-demand-purchase')->middleware('auth');
-Route::post('/live-now/{id}/{vod_name}/', 'LiveNowController@vod_purchase')->name('live-purchase')->middleware('auth');
+Route::post('/on-demand/purchase', 'OndemandController@vod_purchase')->name('on-demand-purchase')->middleware('auth');
+Route::post('/live-now/purchase', 'LiveNowController@vod_purchase')->name('live-purchase')->middleware('auth');
+
+Route::post('/on-demand/squash/purchase', 'OndemandController@vod_squash_purchase')->name('on-demand-squash-purchase')->middleware('auth');
+Route::post('/live-now/squash/purchase', 'OndemandController@vod_squash_purchase')->name('live-squash-purchase')->middleware('auth');
 
 Route::post('/live-event/{id}/{event_name}', 'LiveNowController@event_purchase')->name('event-purchase')->middleware('auth');
 Route::post('/vod-event/{id}/{event_name}', 'OndemandController@ondemand_event_purchase')->name('ondemand-event_purchase')->middleware('auth');
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/on-demand', 'OndemandController@index')->name('on-demand');
+Route::get('/on-demand/squash', 'OndemandController@index_squash')->name('on-demand-squash');
 Route::get('/on-demand/{id}/{stream_filename}', 'OndemandController@vod_watch')->name('on-demand-view')->middleware('auth');
+Route::get('/on-demand/squash/{id}/{streamfile_name}', 'OndemandController@vod_squash_watch')->name('on-demand-squash-view')->middleware('auth');
 Route::get('/live-now', 'LiveNowController@index')->name('live-now');
 Route::get('/live-now/{id}/{stream_name}', 'LiveNowController@watch')->name('live-now-watch')->middleware('auth');
 Route::get('/live-event/{id}/{event_name}', 'LiveNowController@event_live_watch')->name('event-live-watch')->middleware('auth');
 Route::get('/vod-event/{id}/{event_name}', 'OndemandController@ondemand_event_watch')->name('event-ondemand-watch')->middleware('auth');
+
+Route::get('/live-now/squash/{squash_stream_id}/{stream_name}', 'LiveNowController@watch_squash')->name('live-now-squash-watch')->middleware('auth');
+
 // Referee Dashboard
 
 Route::post('/referee/dashboard', 'RefereeController@startStream')->name('referee-start-stream')->middleware(CheckReferee::class)->middleware('auth');
-// Create Stop Stream x--x
-Route::post('/referee/dashboard/fixture/{id}/stream');//...
-
 Route::post('/referee/update-scores', 'RefereeController@updateScores')->name('referee-update-scores')->middleware(CheckReferee::class)->middleware('auth');
-Route::post('/referee/connect-streamfile', 'RefereeController@connect_streamfile')->name('referee-connect-streamfile')->middleware(CheckReferee::class)->middleware('auth');
 Route::post('/referee/stop-stream', 'RefereeController@stopStream')->name('referee-stop-stream')->middleware(CheckReferee::class)->middleware('auth');
 
 Route::get('/referee/dashboard', 'RefereeController@index')->name('referee-dashboard')->middleware(CheckReferee::class)->middleware('auth');
 Route::get('/referee/dashboard/fixture/{id}/{stream_name}', 'RefereeController@viewStream')->name('referee-view-stream')->middleware(CheckReferee::class)->middleware('auth');
 
 // End Referee Dashboard
+
+// Squash Referee Dashboard
+
+Route::post('/referee/squash/dashboard', 'SquashRefereeController@startStream')->name('referee-squash-start-stream')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/update-scores', 'SquashRefereeController@updateScores')->name('referee-squash-update-scores')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/stop-stream', 'SquashRefereeController@stopStream')->name('referee-squash-connect-streamfile')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/start-recording', 'SquashRefereeController@startRecording')->name('referee-squash-start-recording')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/stop-recording', 'SquashRefereeController@stopRecording')->name('referee-squash-stop-recording')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/start-next-round', 'SquashRefereeController@startNextRound')->name('referee-squash-start-next-round')->middleware(CheckReferee::class)->middleware('auth');
+
+Route::get('/referee/squash/dashboard', 'SquashRefereeController@index')->name('referee-squash-dashboard')->middleware(CheckReferee::class)->middleware('auth');
+Route::get('/referee/squash/dashboard/fixture/{id}/{stream_name}', 'SquashRefereeController@viewStream')->name('referee-squash-view-stream')->middleware(CheckReferee::class)->middleware('auth');
+
+// End Referee Squash Dashboard
 
 // Super User Dashboard
 Route::post('/superuser/dashboard/startstream', 'SuperuserController@startStream')->name('superuser-dashboard-start-stream')->middleware(CheckSuperuser::class)->middleware('auth');

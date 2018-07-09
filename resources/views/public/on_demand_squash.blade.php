@@ -50,47 +50,19 @@
 
 @section('content')
 <br />
-<h1 class="main-heading" align="left">Indoor Soccer On Demand Videos</h1>
+<h1 class="main-heading" align="left">Squash On Demand Videos</h1>
 <hr />
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <form action="/on-demand/" method="get">
-                <div class="form-group row">
-                    <label for="select_channel" class="col-sm-2" style="color: white;"><strong>Select Channel</strong></label>
-                    <select class="form-control-sm col-sm-2" id="select_channel" name="channel" onchange="this.form.submit()">
-                        @if($request->channel == 'all')
-                        <option selected="selected" value="all">All</option>
-                        @else
-                        <option value="all">All</option>
-                        @endif
-                        @foreach($channels as $channel)
-                        @if($request->channel == $channel->id)
-                            <option selected="selected" value="{{$channel->id}}">{{$channel->name}}</option>
-                        @else
-                            <option value="{{$channel->id}}">{{$channel->name}}</option>
-                        @endif
-                        @endforeach
-                    </select>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-<br />
 <div class="mx-auto px-1">
     <div class="row d-flex justify-content-center">
         @foreach($vods as $vod)
-            @if($vod->stream_type == "vod")
-            <div class="col-xs-12 col-md-3 vod-item">
-                <a href="/on-demand/{{$vod->id}}/{{$vod->name}}/" class="js-item">
-                    <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
-                    <i class="far fa-play-circle play-icon" style="display:none;"></i>
-                </a>
-                <p style="color: #ffffff; margin: 5px;">{{str_replace("_", " ", $vod->name)}}</p>
-                <p style="color: #ffffff; margin: 5px;">@<a href="#">{{\App\Venue::find($vod->venue_id)->name}}</a></p>
-            </div>
-            @endif
+        <div class="col-xs-12 col-md-3 vod-item">
+            <a href="/on-demand/squash/{{$vod->id}}/{{$vod->name}}/" class="js-item">
+                <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
+                <i class="far fa-play-circle play-icon" style="display:none;"></i>
+            </a>
+            <p style="color: #ffffff; margin: 5px;">{{str_replace("_", " ", $vod->name)}}</p>
+            <p style="color: #ffffff; margin: 5px;">@<a href="#">{{\App\Venue::find($vod->venue_id)->name}}</a></p>
+        </div>
         @endforeach
     </div>
 </div>
@@ -103,14 +75,14 @@
     <ul class="pagination">
         @if($current_page > 2)
         <li class="page-item">
-            <a class="page-link pagination-skip" href="?page={{$current_page - 3}}&channel={{$request->channel}}" aria-label="Next">
+            <a class="page-link pagination-skip" href="?page={{$current_page - 3}}" aria-label="Next">
                 <span class="fas fa-fast-backward" aria-hidden="true"></span>
                 <span class="sr-only">back</span>
             </a>
         </li>
         @else
         <li class="page-item disabled">
-            <a class="page-link pagination-skip" href="?page={{$current_page - 3}}&channel={{$request->channel}}" aria-label="Next">
+            <a class="page-link pagination-skip" href="?page={{$current_page - 3}}" aria-label="Next">
                 <span class="fas fa-fast-backward" style="color: #ffffff !important;" aria-hidden="true"></span>
                 <span class="sr-only">back</span>
             </a>
@@ -118,14 +90,14 @@
         @endif
         @if($current_page > 1)
         <li class="page-item">
-            <a class="page-link pagination-skip" href="?page={{$current_page - 1}}&channel={{$request->channel}}" aria-label="Next">
+            <a class="page-link pagination-skip" href="?page={{$current_page - 1}}" aria-label="Next">
                 <span class="fas fa-step-backward" aria-hidden="true"></span>
                 <span class="sr-only">back 3</span>
             </a>
         </li>
         @else
         <li class="page-item disabled">
-            <a class="page-link pagination-skip" href="?page={{$current_page - 1}}&channel={{$request->channel}}" style="color: #ffffff !important;" aria-label="Next">
+            <a class="page-link pagination-skip" href="?page={{$current_page - 1}}" style="color: #ffffff !important;" aria-label="Next">
                 <span class="fas fa-step-backward" style="color: #ffffff !important;" aria-hidden="true"></span>
                 <span class="sr-only">back 3</span>
             </a>
@@ -134,22 +106,22 @@
         @foreach($page_numbers as $page_number)
             @if($page_number < $vods->lastPage())
                 @if($page_number == $vods->currentPage())
-                <li class="page-item disabled"><a class="page-link pagination-number" href="?page={{$page_number}}&channel={{$request->channel}}" style="background-color: #181818 !important;">{{$page_number}}</a></li>
+                <li class="page-item disabled"><a class="page-link pagination-number" href="?page={{$page_number}}" style="background-color: #181818 !important;">{{$page_number}}</a></li>
                 @else
-                <li class="page-item"><a class="page-link pagination-number" href="?page={{$page_number}}&channel={{$request->channel}}">{{$page_number}}</a></li>
+                <li class="page-item"><a class="page-link pagination-number" href="?page={{$page_number}}">{{$page_number}}</a></li>
                 @endif
             @endif
         @endforeach
         @if(($vods->lastPage() - $current_page) > 1)
         <li class="page-item">
-            <a class="page-link pagination-skip" href="?page={{$current_page + 1}}&channel={{$request->channel}}" aria-label="Next">
+            <a class="page-link pagination-skip" href="?page={{$current_page + 1}}" aria-label="Next">
                 <span class="fas fa-step-forward" aria-hidden="true"></span>
                 <span class="sr-only">Next</span>
             </a>
         </li>
         @else
         <li class="page-item disabled">
-            <a class="page-link pagination-skip"  href="?page={{$current_page + 1}}&channel={{$request->channel}}" aria-label="Next">
+            <a class="page-link pagination-skip"  href="?page={{$current_page + 1}}" aria-label="Next">
                 <span class="fas fa-step-forward" style="color: #ffffff !important;" aria-hidden="true"></span>
                 <span class="sr-only">Next</span>
             </a>
@@ -157,14 +129,14 @@
         @endif
         @if(($vods->lastPage() - $current_page) > 3)
         <li class="page-item">
-            <a class="page-link pagination-skip" href="?page={{$current_page + 3}}&channel={{$request->channel}}" aria-label="Next">
+            <a class="page-link pagination-skip" href="?page={{$current_page + 3}}" aria-label="Next">
                 <span class="fas fa-fast-forward" aria-hidden="true"></span>
                 <span class="sr-only">Next 3</span>
             </a>
         </li>
         @else
         <li class="page-item disabled">
-            <a class="page-link pagination-skip" href="?page={{$current_page + 3}}&channel={{$request->channel}}" aria-label="Next">
+            <a class="page-link pagination-skip" href="?page={{$current_page + 3}}" aria-label="Next">
                 <span class="fas fa-fast-forward" style="color: #ffffff !important;" aria-hidden="true"></span>
                 <span class="sr-only">Next 3</span>
             </a>
@@ -182,8 +154,8 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @section('scripts')
-
 @endsection
