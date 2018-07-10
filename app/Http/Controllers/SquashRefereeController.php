@@ -79,7 +79,7 @@ class SquashRefereeController extends Controller
         }                      
     }
 
-    public function startRecording(Request $request)
+    public function startRally(Request $request)
     {
         // Make post url for this function
         // Check if streamfile is connected else connect streamfile
@@ -94,86 +94,16 @@ class SquashRefereeController extends Controller
         $rallies_in_round = $rounds[$current_round]["rallies"];
         $current_rally = count($rallies_in_round);
 
-        $settings = $this->getSettings();
-
-        $sf = new \Com\Wowza\StreamFile($settings, $venue->wow_app_name, $stream->name);
-        $response = $sf->get();
-
-        $sf_recordings = new \Com\Wowza\Recording($settings, $venue->wow_app_name);
-        $response_recordings = $sf_recordings->getAll();
-
-        $recording_status = true;
-
-        foreach($response_recordings->streamrecorder as $recorder)
-        {
-            if($recorder->recorderName == $stream->name.".stream_source") 
-            {
-                if($recorder->recorderState == 'Recording in Progress') {
-                    $recording_status = false;
-                } else {
-                    $recording_status = true;
-                }
-            }
-        }
-
-        if($recording_status)
-        {
-            if($response->name == $stream->name)
-            {
-                $sf_record = new \Com\Wowza\Recording($settings, $venue->wow_app_name, "_definst_");
-    
-                $recordName= $stream->name.".stream_source";
-                $instanceName= "_definst_";
-                $recorderState= "Waiting for stream";
-                $defaultRecorder= true;
-                $segmentationType= "None";
-                $outputPath= "C:/wowza/content/";
-                $baseFile= $stream->name.".mp4";
-                $fileFormat= "MP4"; // or FLV
-                $fileVersionDelegateName= "com.wowza.wms.livestreamrecord.manager.StreamRecorderFileVersionDelegate";
-                $fileTemplate= "\${BaseFileName}_\${RecordingStartTime}_\${SegmentNumber}";
-                $segmentDuration= "900000";
-                $segmentSize= "10485760";
-                $segmentSchedule= "";
-                $recordData= true;
-                $startOnKeyFrame= true;
-                $splitOnTcDiscontinuity= false;
-                $option= "Append existing file";
-                $moveFirstVideoFrameToZero= true;
-                $currentSize= 0;
-                $currentDuration= 0;
-                $recordingStartTime = "";
-    
-                $response_recording = $sf_record->create($recordName, $instanceName, $recorderState, $defaultRecorder,
-                                    $segmentationType, $outputPath, $baseFile, $fileFormat, $fileVersionDelegateName, $fileTemplate,
-                                    $segmentDuration, $segmentSize, $segmentSchedule, $recordData, $startOnKeyFrame, $splitOnTcDiscontinuity,
-                                    $option, $moveFirstVideoFrameToZero, $currentSize, $currentDuration, $recordingStartTime);
-    
-                $check_stream_response = $this->checkStreamConncetion($settings, $venue->wow_app_name, $stream->name, $stream->id, $fixture->id);
-                if($check_stream_response == 'successfull')
-                {
-                    \Session::flash('success', 'Rally has started.');
-                    $rounds[count($rounds)]["rallies"][$current_rally]["rally_start_time"] = date('Y-m-d H:i:s');
-                    $fixture->rounds = json_encode($rounds);
-                    $fixture->save();
-                    return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
-                } else {
-                    \Session::flash('error', 'The recording could not be started.');
-                    return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
-                }
-            } else {
-                \Session::flash('error', 'The stream file is missing.');
-                return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
-            }
-    
-        } else {
-            \Session::flash('error', 'The Rally has already started. End the rally first.');
-            return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
-        }
+        \Session::flash('success', 'Rally has started.');
+        $rounds[count($rounds)]["rallies"][$current_rally]["rally_start_time"] = date('Y-m-d H:i:s');
+        $fixture->rounds = json_encode($rounds);
+        $fixture->rally_running = 'running';
+        $fixture->save();
+        return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();        
 
     }
 
-    public function stopRecording(Request $request)
+    public function stopRally(Request $request)
     {
         // Make post url for this function
         // Save time in row for fixture when stopping squash rally
@@ -188,49 +118,17 @@ class SquashRefereeController extends Controller
         $rallies_in_round = $rounds[$current_round]["rallies"];
         $current_rally = count($rallies_in_round);
 
-        $settings = $this->getSettings();
+        $rounds[$current_round]["rallies"][$current_rally]["rally_end_time"] = date('Y-m-d H:i:s');
+        $rounds[$current_round]["rallies"][$current_rally]["player_1_score"] = $round_points[$current_round]["player_1"];
+        $rounds[$current_round]["rallies"][$current_rally]["player_2_score"] = $round_points[$current_round]["player_2"];
+        $rounds[$current_round]["rallies"][$current_rally + 1] = ["rally_start_time" => "", "rally_end_time" => "", "player_1_score" => 0, "player_2_score" => 0];
 
-        $sf_recordings = new \Com\Wowza\Recording($settings, $venue->wow_app_name);
-        $response_recordings = $sf_recordings->getAll();
+        $fixture->rounds = json_encode($rounds);
+        $fixture->rally_running = 'not_running';
 
-        $recording_status = false;
+        $fixture->save();
 
-        if($response_recordings)
-        {
-            foreach($response_recordings->streamrecorder as $recorder)
-            {
-                if($recorder->recorderName == $stream->name.".stream_source") 
-                {
-                    if($recorder->recorderState == 'Recording in Progress') {
-                        $recording_status = true;
-                    } else {
-                        $recording_status = false;
-                    }
-                }
-            }        
-        } else {
-            \Session::flash('error', 'The Rally is not running. Make sure you have started the rally first.');
-        }
-
-        if($recording_status)
-        {
-            $sf_recording = new \Com\Wowza\Recording($settings, $venue->wow_app_name, "_definst_");
-            $response_recording = $sf_recording->stop($stream->name . '.stream_source');
-
-            $rounds[$current_round]["rallies"][$current_rally]["rally_end_time"] = date('Y-m-d H:i:s');
-            $rounds[$current_round]["rallies"][$current_rally]["player_1_score"] = $round_points[$current_round]["player_1"];
-            $rounds[$current_round]["rallies"][$current_rally]["player_2_score"] = $round_points[$current_round]["player_2"];
-            $rounds[$current_round]["rallies"][$current_rally + 1] = ["rally_start_time" => "", "rally_end_time" => "", "player_1_score" => 0, "player_2_score" => 0];
-
-            $fixture->rounds = json_encode($rounds);
-            $fixture->save();
-
-            \Session::flash('success', 'Rally Ended Successfully.');
-
-
-        } else {
-            \Session::flash('error', 'The Rally is not running. Make sure you have started the rally first.');
-        }
+        \Session::flash('success', 'Rally Ended Successfully.');
 
         return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
 
@@ -347,7 +245,7 @@ class SquashRefereeController extends Controller
                                 $new_fixture = \App\SquashFixture::create(['squash_stream_id' => $new_stream->id,
                                                                     'player_1' => $request->player_1, 'player_2' => $request->player_2,
                                                                     'date_time' => $request->date_time, 'venue_id' => $venue->id,
-                                                                    'rounds' => '{"1": {"winner": "",  "rallies": { "1": {"rally_start_time": "", "rally_end_time": "", "player_1_score": 0, "player_2_score": 0} } }}',
+                                                                    'rounds' => '{"1": {"winner": "", "round_start_time": "", "round_end_time": "",  "rallies": { "1": {"rally_start_time": "", "rally_end_time": "", "player_1_score": 0, "player_2_score": 0} } }}',
                                                                     'round_points' => '{"1": {"player_1": 0, "player_2": 0} }',
                                                                     'points' => '{ "1": { "player_1": {}, "player_2": {} } }']);
 
@@ -384,13 +282,7 @@ class SquashRefereeController extends Controller
                     \Session::flash('error', $request->name." There is an error starting the stream. Check status of stream connection.");
                 }
 
-            // } else {
-            //     $response_connection = "Stream is not Live";
-            //     \Session::flash('error', $request->name." There is an error starting the stream. Could not connect stream file.");
-            // }
-
         } else {
-            //$response = "Could not add stream check stream files name if it already exists.";
             \Session::flash('error', $request->name." There is an error creating the stream file.");
         }
         
@@ -401,19 +293,23 @@ class SquashRefereeController extends Controller
     public function stopStream(Request $request)
     {
         // Stop and disconnect stream
+        $fixture = \App\SquashFixture::find($request->fixture_id);
+        $stream = \App\SquashStream::find($fixture->squash_stream_id);
+        $venue = \App\Venue::find($fixture->venue_id);
+
         $setup = $this->getSettings();
-        $sf_recording = new \Com\Wowza\Recording($setup, $request->app_name, "_definst_");
-        $response_recording = $sf_recording->stop($request->stream_name . '.stream_source');        
+        $sf_recording = new \Com\Wowza\Recording($setup, $venue->wow_app_name, "_definst_");
+        $response_recording = $sf_recording->stop($stream->name . '.stream_source');        
 
         if($response_recording->success)
         {
-            $sf = new \Com\Wowza\StreamFile($setup, $request->app_name, $request->stream_name);
+            $sf = new \Com\Wowza\StreamFile($setup, $venue->wow_app_name, $stream->name);
             $response_sf = $sf->disconnect();
 
             if($response_sf->success)
             {
-                $wowzaApplication = new \Com\Wowza\Application($setup, $request->app_name);
-                $sf_remove = new \Com\Wowza\StreamFile($setup, $wowzaApplication->getName(), $request->stream_name);
+                $wowzaApplication = new \Com\Wowza\Application($setup, $venue->wow_app_name);
+                $sf_remove = new \Com\Wowza\StreamFile($setup, $wowzaApplication->getName(), $stream->name);
                 $response_remove =$sf_remove->remove();
 
                 \Session::flash('success', 'Stream has successfully stopped');
@@ -423,13 +319,13 @@ class SquashRefereeController extends Controller
 
             }
         } else {
-            $sf = new \Com\Wowza\StreamFile($setup, $request->app_name, $request->stream_name);
+            $sf = new \Com\Wowza\StreamFile($setup, $venue->wow_app_name, $stream->name);
             $response_sf = $sf->disconnect();
 
             if($response_sf->success)
             {
-                $wowzaApplication = new \Com\Wowza\Application($setup, $request->app_name);
-                $sf_remove = new \Com\Wowza\StreamFile($setup, $wowzaApplication->getName(), $request->stream_name);
+                $wowzaApplication = new \Com\Wowza\Application($setup, $venue->wow_app_name);
+                $sf_remove = new \Com\Wowza\StreamFile($setup, $wowzaApplication->getName(), $stream->name);
                 $response_remove =$sf_remove->remove();
             } else {
                 \Session::flash('error', 'There was an issue stopping the Recording. Contact PaperclipSA to report the issue.');
@@ -437,10 +333,8 @@ class SquashRefereeController extends Controller
         }
 
         // Change stream_type to vod
-        $stream = \App\SquashStream::find($request->squash_stream_id);
         $stream->stream_type = "vod";
         $stream->save();
-        $fixture = \App\SquashFixture::where('squash_stream_id', $stream->id)->first();
         $rounds = json_decode($fixture->rounds, true);
 
         foreach($rounds as $round_key=>$round)
@@ -465,7 +359,7 @@ class SquashRefereeController extends Controller
         $fixture->rounds = json_encode($rounds);
         $fixture->save();
 
-        \Session::flash('success', 'Game ended successfully');
+        \Session::flash('success', 'Match ended successfully');
 
         return redirect()->to('/referee/squash/dashboard');
         
@@ -507,8 +401,10 @@ class SquashRefereeController extends Controller
                     'player_1_round_points' => $player_1_round_points, 'player_2_round_points' => $player_2_round_points ]);
     }
 
-    public function startNextRound(Request $request)
+    public function startRoundRecording(Request $request)
     {
+        //Save round start time.
+
         $fixture = \App\SquashFixture::find($request->fixture_id);
         $stream = \App\SquashStream::find($fixture->squash_stream_id);
         $venue = \App\Venue::find($fixture->venue_id);
@@ -517,9 +413,12 @@ class SquashRefereeController extends Controller
         $round_points = json_decode($fixture->round_points, true);
         $points = json_decode($fixture->points, true);
 
-        $current_round = count($rounds);    
+        $current_round = count($rounds);
 
         $settings = $this->getSettings();
+
+        $sf = new \Com\Wowza\StreamFile($settings, $venue->wow_app_name, $stream->name);
+        $response = $sf->get();
         
         $sf_recordings = new \Com\Wowza\Recording($settings, $venue->wow_app_name);
         $response_recordings = $sf_recordings->getAll();
@@ -541,9 +440,109 @@ class SquashRefereeController extends Controller
             }
         }
 
+        if ($recording_status)
+        {
+            if($response->name == $stream->name)
+            {
+                $sf_record = new \Com\Wowza\Recording($settings, $venue->wow_app_name, "_definst_");
+    
+                $recordName= $stream->name.".stream_source";
+                $instanceName= "_definst_";
+                $recorderState= "Waiting for stream";
+                $defaultRecorder= true;
+                $segmentationType= "None";
+                $outputPath= "C:/wowza/content/";
+                $baseFile= $stream->name.".mp4";
+                $fileFormat= "MP4"; // or FLV
+                $fileVersionDelegateName= "com.wowza.wms.livestreamrecord.manager.StreamRecorderFileVersionDelegate";
+                $fileTemplate= "\${BaseFileName}_\${RecordingStartTime}_\${SegmentNumber}";
+                $segmentDuration= "900000";
+                $segmentSize= "10485760";
+                $segmentSchedule= "";
+                $recordData= true;
+                $startOnKeyFrame= true;
+                $splitOnTcDiscontinuity= false;
+                $option= "Append existing file";
+                $moveFirstVideoFrameToZero= true;
+                $currentSize= 0;
+                $currentDuration= 0;
+                $recordingStartTime = "";
+    
+                $response_recording = $sf_record->create($recordName, $instanceName, $recorderState, $defaultRecorder,
+                                    $segmentationType, $outputPath, $baseFile, $fileFormat, $fileVersionDelegateName, $fileTemplate,
+                                    $segmentDuration, $segmentSize, $segmentSchedule, $recordData, $startOnKeyFrame, $splitOnTcDiscontinuity,
+                                    $option, $moveFirstVideoFrameToZero, $currentSize, $currentDuration, $recordingStartTime);
+    
+                $check_stream_response = $this->checkStreamConncetion($settings, $venue->wow_app_name, $stream->name, $stream->id, $fixture->id);          
+                
+                if($check_stream_response == 'successfull')
+                {
+                    \Session::flash('success', 'Game: '.$current_round.' has started.');
+                    $rounds[count($rounds)]["round_start_time"] = date('Y-m-d H:i:s');
+                    $fixture->rounds = json_encode($rounds);
+                    $fixture->round_running = 'running';
+                    $fixture->save();
+                    return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
+                } else {
+                    \Session::flash('error', 'The recording could not be started.');
+                    return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
+                }
+            } else {
+                \Session::flash('error', 'The stream file is missing.');
+                return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
+            }
+        } else {
+            \Session::flash('error', 'The game has already started. End the game first.');
+            return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
+        }
+        
+    }
+
+    public function endRoundRecording(Request $request) 
+    {
+        // End round and stop recording
+        // Update next round
+
+        $fixture = \App\SquashFixture::find($request->fixture_id);
+        $stream = \App\SquashStream::find($fixture->squash_stream_id);
+        $venue = \App\Venue::find($fixture->venue_id);
+        //Convert to php array to update values.
+        $rounds = json_decode($fixture->rounds, true);
+        $round_points = json_decode($fixture->round_points, true);
+        $points = json_decode($fixture->points, true);
+
+        $current_round = count($rounds);    
+
+        $settings = $this->getSettings();
+        
+        $sf_recordings = new \Com\Wowza\Recording($settings, $venue->wow_app_name);
+        $response_recordings = $sf_recordings->getAll();
+
+        $recording_status = false;
+
+        if($response_recordings)
+        {  
+            foreach($response_recordings->streamrecorder as $recorder)
+            {
+                if($recorder->recorderName == $stream->name.".stream_source") 
+                {
+                    if($recorder->recorderState == 'Recording in Progress') {
+                        $recording_status = true;
+                    } else {
+                        $recording_status = false;
+                    }
+                }
+            }
+        }
+
         if($recording_status)
         {
             //Check Round Winner for points total.
+
+            //Save round end time to current round
+
+            $sf_recording = new \Com\Wowza\Recording($settings, $venue->wow_app_name, "_definst_");
+            $response_recording = $sf_recording->stop($stream->name . '.stream_source');
 
             if($round_points[$current_round]["player_1"] > $round_points[$current_round]["player_2"])
             {
@@ -553,6 +552,7 @@ class SquashRefereeController extends Controller
             }
 
             $rounds_count = count($rounds);
+            $rounds[$rounds_count]["round_end_time"] = date('Y-m-d H:i:s');
             $rounds[$rounds_count + 1]["winner"] = "";
             $rounds[$rounds_count + 1]["rallies"]["1"]["rally_start_time"] = "";
             $rounds[$rounds_count + 1]["rallies"]["1"]["rally_end_time"] = "";
@@ -563,15 +563,13 @@ class SquashRefereeController extends Controller
             // convert back to string for column in database.
             $fixture->round_points = json_encode($round_points); 
             $fixture->rounds = json_encode($rounds);
-
+            $fixture->round_running = 'not_running';
             $fixture->save();
 
-            $next_round = $current_round +1;
-
-            \Session::flash('success', "Scores have been updated. " . "Round: " . $next_round . " has started.");
+            \Session::flash('success', "Scores have been updated. " . "Game: " . $current_round . " has ended.");
 
         } else {
-            \Session::flash('error', "A rally is still running, end the rally first.");
+            \Session::flash('error', "A game is not running. Start the game first.");
         }
         
         return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name);

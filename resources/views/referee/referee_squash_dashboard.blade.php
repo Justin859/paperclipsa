@@ -183,7 +183,7 @@
                     <div class="form-group row">
                         <label for="player_1" class="col-3 col-form-label">Player 1</label>
                         <div class="col-9">
-                            <input type="text" class="form-control{{ $errors->has('player_1') ? ' is-invalid' : '' }}" placeholder="Name of Player 1" name="player_1" id="target_a">
+                            <input type="text" class="form-control{{ $errors->has('player_1') ? ' is-invalid' : '' }}" value="{{ old('player_1') }}" placeholder="Name of Player 1" name="player_1" id="target_a">
                             @if ($errors->has('player_1'))
                                 <span class="invalid-feedback">
                                     <strong>{{ $errors->first('player_1') }}</strong>
@@ -194,7 +194,7 @@
                     <div class="form-group row">
                         <label for="player_2" class="col-3 col-form-label">Player 2</label>
                         <div class="col-9">
-                        <input type="text" class="form-control{{ $errors->has('player_2') ? ' is-invalid' : '' }}" placeholder="Name of Player 2" name="player_2" id="target_b">
+                        <input type="text" class="form-control{{ $errors->has('player_2') ? ' is-invalid' : '' }}" value="{{ old('player_2') }}" placeholder="Name of Player 2" name="player_2" id="target_b">
                         @if ($errors->has('player_2'))
                             <span class="invalid-feedback">
                                 <strong>{{ $errors->first('player_2') }}</strong>

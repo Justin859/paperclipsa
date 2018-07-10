@@ -15,6 +15,8 @@ class SquashFixture extends Model
         'rounds',
         'round_points',
         'points',
-        'date_time'
+        'date_time',
+        'rally_running',
+        'round_running'
     ];
 }

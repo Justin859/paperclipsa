@@ -22,7 +22,9 @@ class CreateSquashFixturesTable extends Migration
             $table->longText('rounds'); // who won the round eg. {"round_1": "player_1", "round_2": "player_2"} as php array in eloquent  eg. ["round_1' => "player_1", "round_2" => "player_2"]
             $table->longText('round_points'); // points scored in round eg. {"round_1": {"player_1": 5, "player_2": 4}, "round_2": {"player_1": 3, "player_2": 5}}
             $table->longText('points'); // points with time scored eg. {"round_1": {"player_1": { "1": "00:56" , "2": "2:02" }, "player_2": { "1": "00:32" } }, "2": {"player_1": {"point_1": "00:54"}, "player_2": {"point_1": "1:22"} }}
-            $table->dateTime('date_time');            
+            $table->dateTime('date_time'); 
+            $table->enum('rally_running', ['running', 'not_running'])->default('not_running');    
+            $table->enum('round_running', ['running', 'not_running'])->default('not_running');       
             $table->timestamps();
         });
     }

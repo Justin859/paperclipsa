@@ -59,9 +59,10 @@ Route::get('/referee/dashboard/fixture/{id}/{stream_name}', 'RefereeController@v
 Route::post('/referee/squash/dashboard', 'SquashRefereeController@startStream')->name('referee-squash-start-stream')->middleware(CheckReferee::class)->middleware('auth');
 Route::post('/referee/squash/update-scores', 'SquashRefereeController@updateScores')->name('referee-squash-update-scores')->middleware(CheckReferee::class)->middleware('auth');
 Route::post('/referee/squash/stop-stream', 'SquashRefereeController@stopStream')->name('referee-squash-connect-streamfile')->middleware(CheckReferee::class)->middleware('auth');
-Route::post('/referee/squash/start-recording', 'SquashRefereeController@startRecording')->name('referee-squash-start-recording')->middleware(CheckReferee::class)->middleware('auth');
-Route::post('/referee/squash/stop-recording', 'SquashRefereeController@stopRecording')->name('referee-squash-stop-recording')->middleware(CheckReferee::class)->middleware('auth');
-Route::post('/referee/squash/start-next-round', 'SquashRefereeController@startNextRound')->name('referee-squash-start-next-round')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/start-rally', 'SquashRefereeController@startRally')->name('referee-squash-start-recording')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/stop-rally', 'SquashRefereeController@stopRally')->name('referee-squash-stop-recording')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('referee/squash/start-round-recording', 'SquashRefereeController@startRoundRecording')->name('referee-squash-start-round-recording')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/end-round-recording', 'SquashRefereeController@endRoundRecording')->name('referee-squash-end-round-recording')->middleware(CheckReferee::class)->middleware('auth');
 
 Route::get('/referee/squash/dashboard', 'SquashRefereeController@index')->name('referee-squash-dashboard')->middleware(CheckReferee::class)->middleware('auth');
 Route::get('/referee/squash/dashboard/fixture/{id}/{stream_name}', 'SquashRefereeController@viewStream')->name('referee-squash-view-stream')->middleware(CheckReferee::class)->middleware('auth');
