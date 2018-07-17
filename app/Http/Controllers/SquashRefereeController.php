@@ -79,13 +79,13 @@ class SquashRefereeController extends Controller
         }                      
     }
 
-    public function startRally(Request $request)
+    function startRally($fixture_id)
     {
         // Make post url for this function
         // Check if streamfile is connected else connect streamfile
         // Save time in row for fixture when starting squash rally
 
-        $fixture = \App\SquashFixture::find($request->fixture_id);
+        $fixture = \App\SquashFixture::find($fixture_id);
         $stream = \App\SquashStream::find($fixture->squash_stream_id);
         $venue = \App\Venue::find($fixture->venue_id);
 
@@ -99,7 +99,7 @@ class SquashRefereeController extends Controller
         $fixture->rounds = json_encode($rounds);
         $fixture->rally_running = 'running';
         $fixture->save();
-        return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();        
+        // return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();        
 
     }
 
@@ -127,6 +127,8 @@ class SquashRefereeController extends Controller
         $fixture->rally_running = 'not_running';
 
         $fixture->save();
+
+        $this->startRally($fixture->id);
 
         \Session::flash('success', 'Rally Ended Successfully.');
 
@@ -337,23 +339,26 @@ class SquashRefereeController extends Controller
         $stream->save();
         $rounds = json_decode($fixture->rounds, true);
 
-        foreach($rounds as $round_key=>$round)
+        foreach($rounds as $round_key=>$value)
         {
-            foreach($round["rallies"] as $rally_key=>$rally)
-            {   
-                if($rally["rally_start_time"] == "")
-                {
-                    unset($rally);
+            if ( $rounds[$round_key]["winner"] == "" )
+            {
+                unset($rounds[$round_key]);
+            } else {
+                foreach($rounds[$round_key]["rallies"] as $rally_key=>$rally_value)
+                {   
+                    if(($rounds[$round_key]["rallies"][$rally_key]["player_1_score"] == 0))
+                    {
+                        unset($rounds[$round_key]["rallies"][$rally_key]);
+                    }
                 }
             }
+            
         }
-        foreach($rounds as $round_key=>$round)
+        
+        foreach($rounds as $round_key=>$round_value)
         {
-            if ( $round["winner"] == "" )
-            {
-                unset($round);
-            }
-
+            
         }
         
         $fixture->rounds = json_encode($rounds);
@@ -482,6 +487,9 @@ class SquashRefereeController extends Controller
                     $fixture->rounds = json_encode($rounds);
                     $fixture->round_running = 'running';
                     $fixture->save();
+
+                    $this->startRally($fixture->id);
+
                     return redirect()->to('/referee/squash/dashboard/fixture/'.$fixture->id.'/'.$stream->name)->send();
                 } else {
                     \Session::flash('error', 'The recording could not be started.');

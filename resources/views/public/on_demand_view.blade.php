@@ -56,7 +56,7 @@
     @if($stream_available)
     <div class="row" style="background-color: #000000;">
         <div class="col-md-8 offset-md-2" style="padding: 0px;">
-        <!-- <video src="https://41.185.22.138:1935/VOD_STORAGE_2/mp4:{{$vod->name}}.mp4/playlist.m3u8" data-viblast-key="3234ee02-940e-4ee4-8a26-866bc45b4363" controls width="100%" height="auto"></video> -->
+        <!-- <video src="https://192.168.0.69:1935/VOD_STORAGE_2/mp4:{{$vod->name}}.mp4/playlist.m3u8" data-viblast-key="3234ee02-940e-4ee4-8a26-866bc45b4363" controls width="100%" height="auto"></video> -->
         <video id="video-id" class="video-js vjs-default-skin vjs-big-play-centered" width="640" height="268">
 
         </video>
@@ -202,7 +202,7 @@ $( document ).ready(function() {
     var player = videojs('video-id', {"controls": true, "autoplay": true, "fluid": true, "preload": "auto"});
 
     player.src({
-    src: encodeURI('http://41.185.22.138:1935/'+storage_location+'/mp4:'+video_name+'.mp4/playlist.m3u8'),
+    src: encodeURI('http://192.168.0.69:1935/'+storage_location+'/mp4:'+video_name+'.mp4/playlist.m3u8'),
     type: 'application/x-mpegURL',
     withCredentials: false
     });

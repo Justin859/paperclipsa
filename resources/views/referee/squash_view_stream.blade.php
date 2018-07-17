@@ -141,18 +141,7 @@
     </div>
     <br />
     <div class="row"> <!-- End Game -->
-        <div class="col-6">
-        <form id="start_rally" action="/referee/squash/start-rally" method="post" name="start-rally"><!-- work in progress start and stop recording -->
-        @csrf
-            <input type="number" name="fixture_id" value="{{$fixture->id}}" hidden />
-            @if($fixture->round_running == 'running' and $fixture->rally_running == 'not_running')
-            <button id="StartRally" type="submit" class="btn btn-outline-warning btn-lg btn-block" name="updateScoresBtn">Start Rally</button>
-            @else
-            <button id="StartRally" type="submit" class="btn btn-outline-warning btn-lg btn-block" name="updateScoresBtn" disabled>Start Rally</button>
-            @endif
-         </form>
-        </div>
-        <div class="col-6">
+        <div class="col-12">
         <form id="stop_rally" action="/referee/squash/stop-rally" method="post" name="stop-rally">
         @csrf
             <input type="number" name="fixture_id" value="{{$fixture->id}}" hidden />
@@ -192,10 +181,14 @@
     </div>
     <div class="row">
         <div class="col-12">
-        <form id="end_match" method="post" action="/referee/squash/stop-stream" name="endMatch"><!-- work in progress start next round -->
+            <form id="end_match" method="post" action="/referee/squash/stop-stream" name="endMatch"><!-- work in progress start next round -->
             {{ csrf_field() }}
                 <input type="number" name="fixture_id" value="{{$fixture->id}}" hidden />
+                @if($fixture->round_running == 'running')
+                <button type="submit" class="btn btn-outline-danger btn-lg btn-block" name="stopStreamBtn" disabled>End Match</button>
+                @else
                 <input type="submit" class="btn btn-outline-danger btn-lg btn-block" name="stopStreamBtn" value="End Match" />
+                @endif
             </form>
         </div>
     </div>

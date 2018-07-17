@@ -23,15 +23,25 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::post('/on-demand/purchase', 'OndemandController@vod_purchase')->name('on-demand-purchase')->middleware('auth');
-Route::post('/live-now/purchase', 'LiveNowController@vod_purchase')->name('live-purchase')->middleware('auth');
+Route::post('/live-now/purchase', 'LiveNowController@live_squash_purchase')->name('live-purchase')->middleware('auth');
 
 Route::post('/on-demand/squash/purchase', 'OndemandController@vod_squash_purchase')->name('on-demand-squash-purchase')->middleware('auth');
-Route::post('/live-now/squash/purchase', 'OndemandController@vod_squash_purchase')->name('live-squash-purchase')->middleware('auth');
+Route::post('/live-now/squash/purchase', 'LiveNowController@live_squash_purchase')->name('live-squash-purchase')->middleware('auth');
 
 Route::post('/live-event/{id}/{event_name}', 'LiveNowController@event_purchase')->name('event-purchase')->middleware('auth');
 Route::post('/vod-event/{id}/{event_name}', 'OndemandController@ondemand_event_purchase')->name('ondemand-event_purchase')->middleware('auth');
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+// Channel Pages
+
+Route::get('/channels/', 'HomeController@channels')->name('channels');
+Route::get('/channel/{venue_id}/{venue_name}', 'HomeController@single_channel_main')->name('single-channel');
+Route::get('/channel/{venue_id}/{venue_name}/on-demand', 'HomeController@single_channel_odv')->name('single-channel-odv');
+Route::get('/channel/{venue_id}/{venue_name}/latest', 'HomeController@single_channel_latest')->name('single-channel-latest');
+
+// End Channel Pages
+
 Route::get('/on-demand', 'OndemandController@index')->name('on-demand');
 Route::get('/on-demand/squash', 'OndemandController@index_squash')->name('on-demand-squash');
 Route::get('/on-demand/{id}/{stream_filename}', 'OndemandController@vod_watch')->name('on-demand-view')->middleware('auth');

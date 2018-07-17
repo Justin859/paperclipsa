@@ -145,7 +145,7 @@ class RefereeController extends Controller
                 $recorderState= "Waiting for stream";
                 $defaultRecorder= true;
                 $segmentationType= "None";
-                $outputPath= env('VOD_STORAGE_PATH');
+                $outputPath= 'C:/wowza/content';
                 $baseFile= $stream_file_name.".mp4";
                 $fileFormat= "MP4"; // or FLV
                 $fileVersionDelegateName= "com.wowza.wms.livestreamrecord.manager.StreamRecorderFileVersionDelegate";

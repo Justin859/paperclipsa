@@ -132,29 +132,28 @@ class AjaxController extends Controller {
     $rally_times = [];
     $round_start_time = $rounds["1"]["rallies"]["1"]["rally_start_time"];
 
-    $total_rally_time = strtotime("00:00:00");
+    $total_round_time = strtotime("00:00:00");
 
     foreach($rounds as $round)
     {
-
-        foreach($round['rallies'] as $rally)
-        {
-            $single_rally_duration = date_diff(date_create($rally["rally_start_time"]), date_create($rally["rally_end_time"]))->format('%H:%I:%s');
-            $total_rally_time += strtotime($single_rally_duration) - strtotime("00:00:00");
-        }
+        
+        $single_round_duration = date_diff(date_create($round["round_start_time"]), date_create($round["round_end_time"]))->format('%H:%I:%s');
+        $total_round_time += strtotime($single_round_duration) - strtotime("00:00:00");
+        
     }
 
-    $total_scored = 0;
+    $total_rounds = count($rounds);
 
-    foreach($round_points as $round_points)
+    $total_rallies = 0;
+
+    foreach($rounds as $round)
     {
-        $total_scored += $round_points["player_1"];
-        $total_scored += $round_points["player_2"];
+        $total_rallies += count($round["rallies"]);
     }
 
-    $total_rally_time = date('H:i:s', $total_rally_time);
-    $time_lost = date_diff(date_create($video_duration), date_create($total_rally_time))->format('%H:%I:%s');
-    $time_to_add = gmdate("H:i:s", (strtotime($time_lost) - strtotime("00:00:00")) / $total_scored);
+    $total_round_time = date('H:i:s', $total_round_time);
+    $time_lost = date_diff(date_create($video_duration), date_create($total_round_time))->format('%H:%I:%s');
+    $time_to_add = gmdate("H:i:s", (strtotime($time_lost) - strtotime("00:00:00")) / $total_rallies);
 
     foreach($rounds as $round_key=>$round)
     {
@@ -168,14 +167,13 @@ class AjaxController extends Controller {
             if($rally_key != 1 and $rally["rally_start_time"] != "")
             {
                 
-                    $time = strtotime($rally_times[$round_key][$rally_key -1]) + strtotime($single_rally_duration) - strtotime('00:00:00') + (strtotime($time_to_add) - strtotime('00:00:00'));
-                    $rally_times[$round_key][$rally_key] = date("H:i:s", $time);
-                
+                $time = strtotime($rally_times[$round_key][$rally_key -1]) + (strtotime($single_rally_duration) - strtotime('00:00:00')) + (strtotime($time_to_add) - strtotime('00:00:00'));
+                $rally_times[$round_key][$rally_key] = date("H:i:s", $time);
                 
             } else if($rally["rally_start_time"] != "") {
                 if ( $round_key != 1 ) {
                     $last_time = $rally_times[$round_key-1][count($rally_times[$round_key-1])];
-                    $time = strtotime($single_rally_duration) + (strtotime($last_time) - strtotime('00:00:00')) + (strtotime($time_to_add) - strtotime('00:00:00'));
+                    $time = strtotime($single_rally_duration) + (strtotime($last_time) - strtotime('00:00:00') + (strtotime($time_to_add) - strtotime('00:00:00')));
                     $rally_times[$round_key][$rally_key] = date("H:i:s", $time);
 
                 } else {
@@ -203,7 +201,7 @@ class AjaxController extends Controller {
             }
         }
     }
-    return response()->json(['data' => $current_score]);
+    return response()->json(['data' => $time_lost]);
    }
    
 }

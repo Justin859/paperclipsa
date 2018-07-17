@@ -109,6 +109,7 @@
             
             background: rgba(208, 0, 0 , 0.7) /* Green background with 30% opacity */
         }
+        
     </style>
     @yield('styles')
 </head>
@@ -161,7 +162,7 @@
                     <?php $channels = \App\Venue::all() ?>
                         @foreach($channels as $channel)
                             @if($channel->active_status == "active")
-                            <a class="dropdown-item" href="/channel/{{$channel->id}}">{{$channel->name}}</a>
+                            <a class="dropdown-item" href="/channel/{{$channel->id}}/{{$channel->name}}">{{$channel->name}}</a>
                             @endif
                         @endforeach
                         <div class="dropdown-divider"></div>
@@ -169,7 +170,12 @@
                     </div>
                 </li>
                 <li class="nav-item active">
+                    <?php $live_now = \App\Stream::where('stream_type', 'live')->count() ?>
+                    @if($live_now)
+                    <a class="nav-link" href="/live-now">Live Now <span class="badge badge-warning">{{$live_now}}</span> <span class="sr-only"></span></a>
+                    @else
                     <a class="nav-link" href="/live-now">Live Now <span class="sr-only"></span></a>
+                    @endif
                 </li>
                 <li class="nav-item dropdown active">
                     <a class="nav-link dropdown-toggle" href="#" id="ondemandDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">On Demand <span class="sr-only"></span></a>

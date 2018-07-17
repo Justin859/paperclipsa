@@ -10,6 +10,7 @@
 @section('content')
 
 <div class="container" align="center">
+@if($stream_available)
     <div class="row" style="background-color: #000000;">
         <div class="col-md-8 offset-md-2" style="padding: 0px;">
             <div id="playerElement" style="width:100%; height:0; padding:0 0 56.25% 0"></div>
@@ -41,6 +42,30 @@
             </table>
         </div>
     </div>
+    @else
+    <div class="row" style="background-color: #000000;">
+        <div class="col-md-8 offset-md-2" style="padding: 0px;">
+            <div style="width:100%; height:454.35px; padding:0 0 56.25% 0 0; background-color:black; color:white;">
+                <div class="btn-group" style="postion:absolute; top:45%;" role="group" aria-label="User Actions">
+                @if($account_balance->balance_value >= 10)
+                    <button id="purchaseButton" class="btn btn-outline-warning" data-toggle="modal" data-target="#areYouSure">Use Credits&nbsp;&nbsp;<span class="fas fa-money-bill"></span></button>
+                @else
+                    <button id="purchaseButton" class="btn btn-outline-warning disabled" aria-disabled="true">Use Credits&nbsp;&nbsp;<span class="fas fa-money-bill"></span></button>           
+                @endif    
+                    <button id="buyButton" class="btn btn-outline-warning" data-toggle="modal" data-target="#buyStream">Buy Credits&nbsp;&nbsp;<span class="fas fa-credit-card"></span></button>
+                </div>
+            </div>        
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-9" style="padding: 0px;">
+            <h2 class="main-heading" align="left">{{str_replace("_", " ",$live->name)}}</h2>
+            <p  class="fixture-date-time" align="left">{{$fixture->date_time}}</p>
+            <p class="fixture-venue" align="left"><a class="venue-link" href="#">{{"@" . $current_venue->name}}</a></p>
+        </div>
+    </div>
+    @endif
     <div class="col-12">
         <p id="test"></p>
     </div>
@@ -54,6 +79,7 @@
     <form method="post" action="/live-now/squash/purchase">
     {{ csrf_field() }}
     <input type="number" name="vod_id" hidden="true" value="{{$live->id}}" readonly/>
+    <input type="text" name="vod_name" hidden="true" value="{{$live->name}}" readonly/>
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -63,6 +89,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <p><strong>10</strong> Credits will be deducted</p>
                     <p>Are You Sure ?</p>
                 </div>
                 <div class="modal-footer">
@@ -88,7 +115,7 @@
             <div class="modal-body">
                 <p><strong>In order to gain access to on-demand videos and live streams</strong></p>
                 <p>You now have the option to pay a monthly subscription for a single venue(R30.00/mo) or full Access(R60.00/mo) to all selected venues.</p>
-                <p>Buying credits and using tokens to access videos is still an available option at <strong>5</strong> credits per video.</p>
+                <p>Buying credits and using tokens to access videos is still an available option at <strong>10</strong> credits per video.</p>
             </div>
             <div class="modal-footer">
                 <a href="/subscription/checkout" class="btn btn-info">Purchase Subscription&nbsp;&nbsp;<span class="fas fa-credit-card"></span></a>

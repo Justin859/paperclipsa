@@ -132,6 +132,61 @@ class LiveNowController extends Controller
                 $stream_available = false;
             }
 
+        } else if ( $video_type == 'squash' ) {
+            $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+
+            if ($user_points >= 10)
+            {
+                $sufficient_points = true;
+            }
+    
+            if ($user_streams and $sufficient_points)
+            {
+                $account_balance->balance_value = (string)((int)$user_points - 10);
+                if($user_streams->stream_ids)
+                {
+                    $user_streams->stream_ids = $user_streams->stream_ids.",".$stream_id;
+                } else {
+                    $user_streams->stream_ids = $stream_id;
+                }
+    
+                $user_streams->save();
+                $account_balance->save();
+    
+                $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+                $user_purchased_streams = $user_streams->stream_ids;
+                $purchased_streams_array = explode(',', $user_purchased_streams);
+    
+                if (in_array((string)$stream_id, $purchased_streams_array))
+                {
+                    $stream_available = true;
+
+                    return redirect()->to($redirect_url);
+                }
+    
+            } else if ($user_points and $sufficient_points) {
+                // Create Row for user streams
+                $new_user_streams = \App\SquashUserStream::create(['user_id' => $user->id, 'stream_ids' => $stream_id]);
+                $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+                $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+    
+                $account_balance->balance_value = (string)((int)$user_points - 10);
+    
+                $account_balance->save();
+    
+                $user_purchased_streams = $user_streams->stream_ids;
+                $purchased_streams_array = explode(',', $user_purchased_streams);
+                
+                if (in_array((string)$stream_id, $purchased_streams_array))
+                {
+                    $stream_available = true;
+                    return redirect()->to($redirect_url);
+                }
+    
+            } else {
+                // Exception for no account balance
+                $stream_available = false;
+            }
         }
 
     }
@@ -194,9 +249,25 @@ class LiveNowController extends Controller
         $rounds = json_decode($fixture->rounds, true);
         $round_points = json_decode($fixture->round_points, true);
 
+        $stream_available = false;
+
+        if($user_streams)
+        {
+            $user_purchased_streams = $user_streams->stream_ids;
+            $purchased_streams_array = explode(',', $user_purchased_streams);
+            if (in_array((string)$live->id, $purchased_streams_array))
+            {
+                $stream_available = true;
+            }
+
+        } else {
+            $user_purchased_streams = false;
+            $stream_available = false;
+        }
+
         return view('public.live_now_squash_view', ['live' => $live,
-        // 'user_purchased_streams' => $user_purchased_streams,
-        // 'stream_available' => $stream_available,
+        'user_purchased_streams' => $user_purchased_streams,
+        'stream_available' => $stream_available,
         'fixture' => $fixture,
         'more_live_streams' => $more_live_streams,
         'current_venue' => $current_venue,
@@ -219,6 +290,23 @@ class LiveNowController extends Controller
         $sufficient_points = false;
 
         return $this->purchase_access('/live-now/'.$vod_id.'/'.$vod_name, 'action_sport', $vod_id, $vod_name);
+
+    }
+
+    public function live_squash_purchase(Request $request)
+    {
+        $user = Auth::user();
+        $live = \App\SquashStream::where(['id' => $request->vod_id, 'name' => $request->vod_name])->first();
+        $user_streams = \App\SquashUserStream::where('user_id', $user->id)->first();
+        $current_venue = \App\Venue::where('id', $live->venue_id)->first();
+        $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
+        $fixture = \App\SquashFixture::where("squash_stream_id", $live->id)->first();
+        $more_live_streams = \App\SquashStream::all();
+
+        $stream_available = false;
+        $sufficient_points = false;
+
+        return $this->purchase_access('/live-now/squash/'.$request->vod_id.'/'.$request->vod_name, 'squash', $request->vod_id, $request->vod_name);
 
     }
 
