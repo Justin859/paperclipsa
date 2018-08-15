@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <link rel="icon" 
+      type="image/png" 
+      href="{{asset('images/favicon.jpg')}}">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -20,8 +22,7 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{asset('vendor/bootstrap-4.0.0/dist/css/bootstrap.min.css')}}">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- <link href="{{ asset('css/app.css') }}" rel="stylesheet"> -->
     <style>
         body
@@ -37,14 +38,6 @@
         .navbar-brand
         {
             margin-top: 5px;
-        }
-        .banner
-        {
-            background: url("<?php echo  asset('images/banners/img-2.jpg')?>");
-            border-radius: 0px;
-            background-repeat: no-repeat;
-            background-size: contain;
-            height: 706px;
         }
 
         .vod-item
@@ -85,10 +78,21 @@
             color: #ffffff;
         }
 
+        .card img
+        {
+            border-radius: 0px;
+        }
+
         .card-header
         {
             background-color: #D00000;
             color: #ffffff;
+            border-radius: 0px;
+        }
+        .card-deck
+        {
+            border-width: 0px;
+            
         }
         .card-body
         {
@@ -108,6 +112,16 @@
         .navbar {
             
             background: rgba(208, 0, 0 , 0.7) /* Green background with 30% opacity */
+        }
+
+        .nav .nav-item a
+        {
+            color: #D3D3D3;
+        }
+
+        .nav .nav-item a:hover
+        {
+            color: #ffffff;
         }
         
     </style>
@@ -170,7 +184,11 @@
                     </div>
                 </li>
                 <li class="nav-item active">
-                    <?php $live_now = \App\Stream::where('stream_type', 'live')->count() ?>
+                    <?php 
+                        $live_soccer = \App\Stream::where('stream_type', 'live')->count();
+                        $live_squash = \App\SquashStream::where('stream_type', 'live')->count();
+                        $live_now = $live_soccer + $live_squash;
+                    ?>
                     @if($live_now)
                     <a class="nav-link" href="/live-now">Live Now <span class="badge badge-warning">{{$live_now}}</span> <span class="sr-only"></span></a>
                     @else
@@ -207,7 +225,7 @@
                             @endif
                         @else
                         <li class="nav-item">
-                            <img src="{{asset('storage/userprofile_imgs/profile_img.svg')}}" height="45" width="45" class="rounded-circle">
+                            <img src="{{asset('storage/userprofile_imgs/profile_img.jpg')}}" height="45" width="45" class="rounded-circle">
                         </li>
                         @endif
                     <li class="nav-item dropdown">
@@ -221,9 +239,7 @@
                                 $is_referee = \App\Referee::where('user_id', Auth::user()->id)->first();
                                 $is_superuser = \App\SuperUser::where('user_id', Auth::user()->id)->first();
                             ?>
-                            @if(!$is_referee)
-                            <a class="dropdown-item" href="/">Profile</a>
-                            @endif
+                            <a class="dropdown-item" href="/user-profile">Profile</a>
                             @if($is_admin)
                                 <a class="dropdown-item" href="/admin/dashboard">Dashboard</a>
                             @endif
@@ -256,20 +272,76 @@
         </div>
     </nav>
 
-        @include('flash-message')
-    
-        @yield('content')
-        
-        @yield('modal')
-        
-    <nav class="navbar sticky-bottom navbar-dark bg-dark" style="margin-top: 30%; bottom: 0px;">
+    @include('flash-message')
+
+    @yield('content')
+
+    <div class="container-fluid mt-5 mb-5">
+        <div class="d-flex justify-content-center">
+            <div class="card-deck">
+                <div class="card card-footer">
+                <div class="card-body">
+                <ul class="nav flex-column text-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/channels">Channels</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/on-demand">On Demand</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/live-now">Live Now</a>
+                    </li>
+                </ul>
+                </div> 
+                </div>
+                <div class="card card-footer">
+                <div class="card-body">
+                <p class="card-text">
+                <strong>Our Vision</strong>:
+                <small>To become the most reliable and affordable live streaming and on demand video platform in South Africa.</small>
+                </p>
+                <p class="card-text">
+                <strong>Our Mission</strong>:
+                <small>To provide a superior quality live streaming and on demand video platform for schools,
+                 churches, recreational activities, academic purposes and all other events, recommended by families,
+                  friends and colleagues, of which employees are proud of and investors seek for long term returns.</small>
+                </p>    
+                </div>      
+                </div>
+                <div class="card card-footer text-center">
+                <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><img src="{{asset('images/payfast/secure-payments.png')}}" class="img-fluid" /></li>
+                    <br />
+                    <li><img src="{{asset('images/payfast/PayFast_Payment_Methods/Mastercard horizontal-02.png')}}" height="155" width="172" class="img-fluid" /></li>
+                    <br />
+                    <li><img src="{{asset('images/payfast/PayFast_Payment_Methods/Visa.png')}}" height="55" width="120" class="img-fluid" /></li>
+                </ul>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar sticky-bottom navbar-dark bg-dark" style="bottom: 0px;">
         <a class="navbar-brand" href="#"><small>PAPERCLIP SOUTH AFRICA © 2017-2018</small></a>
     </nav>
-    
+        @yield('modal')
+
     <script src="{{asset('vendor/jquery-3.3.1/jquery.min.js')}}"></script>
     <script src="{{asset('vendor/bootstrap-4.0.0/assets/js/vendor/popper.min.js')}}"></script>
     <script src="{{asset('vendor/bootstrap-4.0.0/dist/js/bootstrap.min.js')}}"></script>
     <script>
+
+        var clear_file = function(){
+            document.getElementById("uploadCaptureInputFile").value = "";
+        }
+
         $( document ).ready(function() {
             $( ".js-item" )
             .hover(function() {
@@ -285,6 +357,9 @@
             //     setDate: "01/01/1999",
             //     });
             // });
+            $("input[type='image']").click(function() {
+                $("input[id='uploadCaptureInputFile']").click();
+            });
         });
     </script>
     @yield('scripts')

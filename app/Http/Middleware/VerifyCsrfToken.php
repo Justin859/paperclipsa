@@ -13,6 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
-        'notify_subscription'
+        'subscription/notify',
+        'user-profile/buy-credit-notify',
     ];
 }

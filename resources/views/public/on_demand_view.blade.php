@@ -12,12 +12,30 @@
 
 @section('styles')
 <style>
+    .score-container-overlay
+    {
+        padding: 0.6em;
+        text-align: center;
+        background-color: #FFCC00;
+        font-size: 0.8em;
+        font-weight: bold;
+        width: 100%;
+    }
+    .team-container-overlay
+    {
+        color: #ffffff;
+        padding: 0.6em;
+        width: 100%;
+        font-size: 0.8em;
+        background-color: #505050;
+    }
+
     .score-container
     {
         padding: 20px;
         text-align: center;
         background-color: #FFCC00;
-        font-size: 25px;
+        font-size: 24px;
         width: 100%;
     }
     .team-container
@@ -25,6 +43,7 @@
         color: #ffffff;
         padding: 20px;
         width: 100%;
+        font-size: 24px;
         background-color: #505050;
     }
     .fixture-date-time, .fixture-venue
@@ -48,6 +67,41 @@
         height: auto !important;
         z-index: 9999;
     } */
+
+.vjs-emre{
+    z-index:9999;
+    color:black;
+    position:absolute;
+    top: 0px;
+    width: 100%;
+    height: 10%;
+  }
+  .vjs-control{
+    z-index:9999;
+  }
+
+  .vjs-emre a
+  {
+    z-index:9999;
+    color:black;
+    position:absolute;
+    right:20px;
+    width: 20%;
+    opacity: 0.5; 
+    top: 15px;
+
+  }
+
+.vjs-emre #score-overlay
+  {
+    z-index:9999;
+    color:black;
+    position:absolute;
+    left:40%;
+    width: 20%;
+    top: 0px;
+  }
+
 </style>
 @endsection
 
@@ -56,7 +110,7 @@
     @if($stream_available)
     <div class="row" style="background-color: #000000;">
         <div class="col-md-8 offset-md-2" style="padding: 0px;">
-        <!-- <video src="https://192.168.0.69:1935/VOD_STORAGE_2/mp4:{{$vod->name}}.mp4/playlist.m3u8" data-viblast-key="3234ee02-940e-4ee4-8a26-866bc45b4363" controls width="100%" height="auto"></video> -->
+        <!-- <video src="https://192.168.1.69:1935/VOD_STORAGE_2/mp4:{{$vod->name}}.mp4/playlist.m3u8" data-viblast-key="3234ee02-940e-4ee4-8a26-866bc45b4363" controls width="100%" height="auto"></video> -->
         <video id="video-id" class="video-js vjs-default-skin vjs-big-play-centered" width="640" height="268">
 
         </video>
@@ -64,7 +118,7 @@
     </div>
     <div class="row">
         <div class="col-md-4 team-container"><h4>{{$fixture->team_a}}</h4></div>
-        <div class="col-md-4 score-container">{{$fixture->team_a_goals}} - {{$fixture->team_b_goals}}</div>
+        <div class="col-md-4 score-container"><span id="teamAscoreID">{{$fixture->team_a_goals}}</span> - <span id="teamBscoreID">{{$fixture->team_b_goals}}<span></div>
         <div class="col-md-4 team-container"><h4>{{$fixture->team_b}}</h4></div>
     </div>
     <div class="row">
@@ -183,9 +237,106 @@
 <script src="{{asset('node_modules/videojs-watermark/dist/videojs-watermark.min.js')}}"></script>
 <script src="https://cdn.jsdelivr.net/npm/videojs-flash@2/dist/videojs-flash.min.js"></script>
 
+<?php 
+        function shorten_name($name)
+        {
+            $split_name = explode(" ", $name);
+            $short_name = "";
+            if(count($split_name) > 1)
+            {
+                foreach($split_name as $first_letter)
+                {
+                    $short_name .= $first_letter[0];
+                }
+            } else {
+                $short_name = substr($name, 0, 3);
+            }
+            return $short_name;
+        }
+        $team_a_short = shorten_name($fixture->team_a);
+        $team_b_short = shorten_name($fixture->team_b);
+    ?>
+
+@if($fixture->score_tracking)
+
+<script>
+
+$( document ).ready(function() {
+    $('#areYouSure').on('shown.bs.modal', function () {
+        $('#purchaseButton').trigger('focus');
+    });
+
+    $('#buyStream').on('shown.bs.modal', function () {
+        $('#buyButton').trigger('show');
+    });
+
+    var video_name = "<?php echo $vod->name ?>";
+    var storage_location = "<?php echo $vod->storage_location ?>";
+    var player = videojs('video-id', {"controls": true, "autoplay": true, "fluid": true, "preload": "auto"});
+
+    player.src({
+    src: encodeURI('http://192.168.1.69:1935/'+storage_location+'/mp4:'+video_name+'.mp4/playlist.m3u8'),
+    type: 'application/x-mpegURL',
+    withCredentials: false
+    });
+
+    player.newoverlay({
+    contentOfOverlay:"<a href='https://supabets.co.za/Sport/Default.aspx' target='_blank'><img class='img-fluid' height='auto' width='50px' src='https://www.paperclipsa.co.za/storage/adverts/images/S6DqtnInVNdbKhm9ppSmSPyvQ7cIw7IOauQ3DqBU.jpeg'></a>"
+    + "<div id='score-overlay'>"
+    + "<div class='row'>"
+    + "<div class='col-4 team-container-overlay'><span>{{$team_a_short}}</span></div>"
+    + "<div class='col-4 score-container-overlay'><span id='teamAscoreOverlayID'>{{$fixture->team_a_goals}}</span> - <span id='teamBscoreOverlayID'>{{$fixture->team_b_goals}}<span></div>"
+    + "<div class='col-4 team-container-overlay'><span>{{$team_b_short}}</span></div>"
+    + "</div>"
+    +"</div>",
+    changeDuration:10000
+    });
+
+     var waitForEl = function (selector, callback, maxTimes = false) {
+      if (jQuery(selector).length) {
+        callback();
+      } else {
+        if (maxTimes === false || maxTimes > 0) {
+          (maxTimes != false) && maxTimes-- ;
+          setTimeout(function () {
+            waitForEl(selector, callback, maxTimes);
+          }, 100);
+        }
+      }
+    };
+
+    waitForEl('#teamAscoreOverlayID', function start_call() {
+        function get_duration(){
+        $.ajax({
+            type: "POST",
+            url: "/api/get-indoor-soccer-score?fixture_id=<?php echo $fixture->id ?>&current_duration=" + player.currentTime() + "&video_duration=" + player.duration(), 
+            async: false,
+            success: function(response) {
+                console.log(response["data"]);
+                //document.getElementById("table-data").innerHTML = x;
+                document.getElementById("teamAscoreID").innerHTML = response["data"]["1"]["team_a_score"];
+                document.getElementById("teamBscoreID").innerHTML = response["data"]["1"]["team_b_score"];
+                document.getElementById("teamAscoreOverlayID").innerHTML = response["data"]["1"]["team_a_score"];
+                document.getElementById("teamBscoreOverlayID").innerHTML = response["data"]["1"]["team_b_score"];
+                setTimeout(function(){get_duration();}, 1500);
+
+            },
+            error: function(response) {
+                console.log(response);
+            }
+
+        });  
+    }
+    get_duration();
+
+    }, maxTimes = false)
 
 
-<?php $ip_address = \App\GlobalSetting::find(1)->wowza_server_ip ?>
+});
+
+</script>
+
+@else
 
 <script type="text/javascript">
 $( document ).ready(function() {
@@ -202,33 +353,26 @@ $( document ).ready(function() {
     var player = videojs('video-id', {"controls": true, "autoplay": true, "fluid": true, "preload": "auto"});
 
     player.src({
-    src: encodeURI('http://192.168.0.69:1935/'+storage_location+'/mp4:'+video_name+'.mp4/playlist.m3u8'),
+    src: encodeURI('http://192.168.1.69:1935/'+storage_location+'/mp4:'+video_name+'.mp4/playlist.m3u8'),
     type: 'application/x-mpegURL',
     withCredentials: false
     });
 
     player.newoverlay({
-    contentOfOverlay:"<a href='https://supabets.co.za/Sport/Default.aspx' target='_blank'><img class='img-fluid' height='auto' width='50px' src='https://www.paperclipsa.co.za/storage/adverts/images/S6DqtnInVNdbKhm9ppSmSPyvQ7cIw7IOauQ3DqBU.jpeg'></a>",
+    contentOfOverlay:"<a href='https://supabets.co.za/Sport/Default.aspx' target='_blank'><img class='img-fluid' height='auto' width='50px' src='https://www.paperclipsa.co.za/storage/adverts/images/S6DqtnInVNdbKhm9ppSmSPyvQ7cIw7IOauQ3DqBU.jpeg'></a>"
+    + "<div id='score-overlay'>"
+    + "<div class='row'>"
+    + "<div class='col-4 team-container-overlay'><span>{{$team_a_short}}</span></div>"
+    + "<div class='col-4 score-container-overlay'><span id='teamAscoreOverlayID'>{{$fixture->team_a_goals}}</span> - <span id='teamBscoreOverlayID'>{{$fixture->team_b_goals}}<span></div>"
+    + "<div class='col-4 team-container-overlay'><span>{{$team_b_short}}</span></div>"
+    + "</div>"
+    +"</div>",
     changeDuration:10000
     });
 
 });
-
 </script>
 
-<style>
-.vjs-emre{
-    z-index:9999;
-    color:black;
-    position:absolute;
-    top: 20px;
-    right:20px;
-    opacity: 0.5;
-  }
-  .vjs-control{
-    z-index:9999;
-  }
-
-</style>
+@endif
 
 @endsection

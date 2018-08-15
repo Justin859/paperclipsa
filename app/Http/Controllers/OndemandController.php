@@ -225,7 +225,6 @@ class OndemandController extends Controller
         $vods_from_venue = \App\Stream::where('venue_id', $vod->venue_id)->paginate(15);
 
         $stream_available = false;
-        
 
         if($user_streams)
         {
@@ -239,6 +238,45 @@ class OndemandController extends Controller
         } else {
             $user_purchased_streams = false;
             $stream_available = false;
+        }
+
+        // Subscribed user single or full access
+
+        $is_subscribed_user = \App\SubscribedUser::where('user_id', $user->id)->first();
+
+        if($is_subscribed_user)
+        {
+            if($is_subscribed_user->status == 'active')
+            {
+                $is_single_access_user = \App\SingleAccessUser::where('user_id', $user->id)->first();
+                $is_full_access_user = \App\FullAccessUser::where('user_id', $user->id)->first();
+
+                if($is_single_access_user)
+                {
+                    if($is_single_access_user->venue_id == $vod->venue_id) {
+                        $stream_available = true;
+                        if($user_streams)
+                        {
+                            if($user_streams->stream_ids)
+                            {
+                                $streams_array = explode(",", $user_streams->stream_ids);
+                                if(!in_array((string)$vod->id, $streams_array))
+                                {
+                                    $user_streams->stream_ids = $user_streams->stream_ids.",".$vod->id;
+                                    $user_streams->save();
+                                }
+                                
+                            } else {
+                                $user_streams->stream_ids = $vod->id;
+                            } 
+                        } else {
+                            $new_user_streams = \App\UserStreams::create(['user_id' => $user->id, 'stream_ids' => $vod->id]);
+                        }
+                    } 
+                } else if($is_full_access_user) {
+                    $stream_available = true;
+                }
+            }
         }
 
         return view('public.on_demand_view', [

@@ -121,6 +121,27 @@ class AjaxController extends Controller {
 
    }
 
+   public function get_indoor_soccer_score(Request $request)
+   {
+        $fixture = \App\Fixture::find($request->fixture_id);
+        $current_duration = gmdate("H:i:s", $request->current_duration);
+        $scores = json_decode($fixture->score_tracking, true);
+        $current_score = ["1" => ["team_a_score" => 0, "team_b_score" => 0]];
+
+        foreach($scores as $score_key=>$score)
+        {   
+
+            if($current_duration >= $scores[$score_key]["time_scored"]) 
+            {
+                $current_score[1]["team_a_score"] = $scores[$score_key]["team_a_score"];
+                $current_score[1]["team_b_score"] = $scores[$score_key]["team_b_score"];
+            }
+            
+        }
+
+        return response()->json(['data' => $current_score]);
+   }
+
    public function get_squash_score_odv(Request $request)
    {
     $fixture = \App\SquashFixture::find($request->fixture_id);

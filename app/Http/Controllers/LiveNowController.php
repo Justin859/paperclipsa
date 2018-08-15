@@ -197,7 +197,9 @@ class LiveNowController extends Controller
         $live_streams = \App\Stream::where('stream_type', 'live')->get();
         $squash_live_streams = \App\SquashStream::where('stream_type', 'live')->get();
 
-        return view('public.live_now', ['live_streams' => $live_streams, 'squash_live_streams' => $squash_live_streams]);
+        $ads = \App\Advertisers::all();
+
+        return view('public.live_now', ['live_streams' => $live_streams, 'squash_live_streams' => $squash_live_streams, 'ads' => $ads]);
     }
 
     public function watch($stream_id, $stream_name)

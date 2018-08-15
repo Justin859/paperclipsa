@@ -34,7 +34,7 @@
 @section('content')
 <h1 class="game-header">Live Fixture</h1>
 <p class="fixture-venue">{{$venue->name}}</p>
-<form id="game" action="/referee/update-scores" method="post" name="update-scores">
+<form id="game" action="/referee/update-scores" method="post" name="update-scores" onsubmit="return confirm('Are you sure?');">
 @csrf
 <input name="fixture_id" type="text" value="{{$fixture->id}}" hidden readonly />
 <input id="highlight" name="highlight_time" type="text" hidden />

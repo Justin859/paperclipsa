@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
-define("WOWZA_HOST","http://192.168.0.69:8087/v2");
+define("WOWZA_HOST","http://192.168.1.69:8087/v2");
 define("WOWZA_SERVER_INSTANCE", "_defaultServer_");
 define("WOWZA_VHOST_INSTANCE", "_defaultVHost_");
 define("WOWZA_USERNAME", env('WOWZA_USERNAME'));
@@ -230,7 +230,7 @@ class SquashRefereeController extends Controller
                         } else {
                             $new_stream = \App\SquashStream::create(['name' => $request->name, 'stream_type' => 'live', 'camera_port' => $request->camera_port,
                                                                     'venue_id' => $venue->id, 'uri' => 'rtsp://'.$venue->username.':'.$venue->password.'@'.$venue->venue_ip.':'.$request->camera_port.'/h264',
-                                                                    'http_url' => 'http://192.168.0.69:1935/'.$venue->wow_app_name.'/'.$request->name.'.stream_source/playlist.m3u8',
+                                                                    'http_url' => 'http://192.168.1.69:1935/'.$venue->wow_app_name.'/'.$request->name.'.stream_source/playlist.m3u8',
                                                                     'storage_location' => 'VOD_STORAGE_1']);
                             if($request->fixture_id)
                             {

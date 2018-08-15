@@ -27,3 +27,4 @@ Route::post('/update-squash-score', 'AjaxController@update_squash_score');
 Route::get('/get-squash-score', 'AjaxController@get_squash_score'); // live
 
 Route::post('/get-squash-score-odv', 'AjaxController@get_squash_score_odv'); // on demand video
+Route::post('/get-indoor-soccer-score', 'AjaxController@get_indoor_soccer_score');

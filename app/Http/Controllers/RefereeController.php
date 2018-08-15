@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
-define("WOWZA_HOST","http://192.168.0.69:8087/v2");
+define("WOWZA_HOST","http://192.168.1.69:8087/v2");
 define("WOWZA_SERVER_INSTANCE", "_defaultServer_");
 define("WOWZA_VHOST_INSTANCE", "_defaultVHost_");
 define("WOWZA_USERNAME", env('WOWZA_USERNAME'));
@@ -175,7 +175,7 @@ class RefereeController extends Controller
                     } else {
                         $new_stream = \App\Stream::create(['name' => $request->name, 'stream_type' => 'none', 'field_port' => $request->camera_port,
                                                            'venue_id' => $venue->id, 'uri' => 'rtsp://'.$venue->username.':'.$venue->password.'@'.$venue->venue_ip.':'.$request->camera_port.'/h264',
-                                                           'http_url' => 'http://192.168.0.69:1935/'.$venue->wow_app_name.'/'.$request->name.'.stream_source/playlist.m3u8',
+                                                           'http_url' => 'http://192.168.1.69:1935/'.$venue->wow_app_name.'/'.$request->name.'.stream_source/playlist.m3u8',
                                                            'storage_location' => "VOD_STORAGE_1"]);
                         if($request->fixture_id)
                         {
@@ -297,21 +297,57 @@ class RefereeController extends Controller
     {
         $fixture = \App\Fixture::find($request->fixture_id);
         $stream = \App\Stream::find($fixture->stream_id);
+        $venue = \App\Venue::find($fixture->venue_id);
         
         // Add highlight to database
 
-        // $new_highlight = \App\ClipHighlight::create(['stream_id' => $fixture->stream_id,
-        //                                              'clip_name' => $stream->name .",". $request->highlight_time,
-        //                                              'time' => $request->highlight_time, 'clip_extracted' => false]);
+        $ch = curl_init( 'http://127.0.0.1:8087/v2/servers/_defaultServer_/vhosts/_defaultVHost_/applications/'.$venue->wow_app_name.'/instances/_definst_/incomingstreams/'.$stream->name.'.stream/monitoring/current');
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $ch, CURLOPT_HEADER, false );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt( $ch, CURLOPT_TIMEOUT, 60 );
+            curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'GET' );
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Accept:application/json') );
 
-        // $highlight_time = $request->highlight_time;
+        $res = curl_exec( $ch );
 
-        $fixture->team_a_goals = $request->team_a_scored;
-        $fixture->team_b_goals = $request->team_b_scored;
+        
+        if( curl_getinfo($ch)['http_code'] == '200')
+        {
+            $array_res = json_decode($res, true);
+            
+            $new_highlight = \App\ClipHighlight::create(['stream_id' => $fixture->stream_id,
+                                                         'clip_name' => $stream->name .",". gmdate("H:i:s", $array_res['uptime']),
+                                                         'time' => gmdate("H:i:s", $array_res['uptime']), 'clip_extracted' => false]);
+    
+            $highlight_time = $request->highlight_time;
+    
+            if($fixture->score_tracking)
+            {
+                $scores = json_decode($fixture->score_tracking, true);
+                $current_scores = count($scores);
 
-        $fixture->save();
+                $scores[$current_scores + 1]["team_a_score"] = $request->team_a_scored;
+                $scores[$current_scores + 1]["team_b_score"] = $request->team_b_scored;
+                $scores[$current_scores + 1]["time_scored"] = gmdate("H:i:s", $array_res['uptime']);
 
-        \Session::flash('success', "Scores have been updated");
+                $fixture->score_tracking = json_encode($scores);
+
+            } else {
+                $fixture->score_tracking = '{"1": {"team_a_score": "'.$request->team_a_scored.'", "team_b_score": "'.$request->team_b_scored.'", "time_scored": "'.gmdate("H:i:s", $array_res['uptime']).'"}}';
+            }
+
+            $fixture->team_a_goals = $request->team_a_scored;
+            $fixture->team_b_goals = $request->team_b_scored;
+    
+            $fixture->save();
+    
+            \Session::flash('success', "Scores have been updated");
+        } else {
+            \Session::flash('error', "Scores could not be updated.");
+
+        }
         return redirect()->to('/referee/dashboard/fixture/'.$fixture->id.'/'.$stream->name);
+
     }
 }

@@ -146,7 +146,7 @@
     "license":"PLAY1-h6N7A-zkt3G-We8UE-Dyxcn-G4Pnb",
     "title":"",
     "description":"",
-    "sourceURL":"http%3A%2F%2F192.168.0.69%3A1935%2F{{$app_name}}%2Fstream%3A"+encodeURI("<?php echo $live->name ?>")+".stream_source%2Fplaylist.m3u8",
+    "sourceURL":"http%3A%2F%2F192.168.1.69%3A1935%2F{{$app_name}}%2Fstream%3A"+encodeURI("<?php echo $live->name ?>")+".stream_source%2Fplaylist.m3u8",
     "autoPlay":false,
     "useFlash": true,
     "uiShowDurationVsTimeRemaining": true,

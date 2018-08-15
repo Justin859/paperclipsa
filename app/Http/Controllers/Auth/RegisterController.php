@@ -56,14 +56,11 @@ class RegisterController extends Controller
             'gender' => 'required|string|max:1',
             'country' => 'required|string|max:255',
             'password' => 'required|string|min:6|confirmed',
-            'date_of_birth' => 'required|string',
             'tel' => 'required|string|min:10|max:10',
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:255',
             'province' => 'required|string|max:255',
-            'id_number' => 'required|string|min:13|max:13'
-
-            
+            'id_number' => 'required|string|min:13|max:13'            
         ]);
     }
 
@@ -79,7 +76,6 @@ class RegisterController extends Controller
             'firstname' => $data['firstname'],
             'surname' => $data['surname'],
             'email' => $data['email'],
-            'date_of_birth' => $data['date_of_birth'], //new column
             'gender' => $data['gender'], //new
             'country' => $data['country'], //new column
             'password' => Hash::make($data['password']),
@@ -90,7 +86,8 @@ class RegisterController extends Controller
             'id_number' => $data['id_number'],
             'last_login' => strtotime("now"),
             'onboarding' => 'b',
-            'status' => 'y'
+            'status' => 'y',
+            'verifyToken' => $request->bearerToken()
         ]);
     }
 }

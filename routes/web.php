@@ -33,6 +33,9 @@ Route::post('/vod-event/{id}/{event_name}', 'OndemandController@ondemand_event_p
 
 Route::get('/home', 'HomeController@index')->name('home');
 
+Route::post('/contact/send', 'ContactController@send_query')->name('send-query');
+Route::get('/contact', 'ContactController@contact_page')->name('contact');
+
 // Channel Pages
 
 Route::get('/channels/', 'HomeController@channels')->name('channels');
@@ -148,11 +151,63 @@ Route::get('/vouchers-csv/{venue_id}', function($venue_id){
     return Response::download($filename, $filename, $headers);
 })->middleware(CheckSuperuser::class)->middleware('auth');
 
+// User Registration
+
+Route::post('/registration/new', 'Auth\RegistrationController@register');
+
+Route::get('/registration/', 'Auth\RegistrationController@registration_view');
+
+// User Dashboard
+
+Route::post('/user-profile/image-change', 'DashboardController@change_image')->middleware('auth');
+Route::post('/user-profile/update', 'DashboardController@update_user')->middleware('auth');
+Route::post('/user-profile/buy-credits', 'DashboardController@buy_credits')->middleware('auth');
+Route::post('/user-profile/purchase-credit', 'DashboardController@redirect_to_payfast')->middleware('auth');
+Route::post('/user-profile/buy-credit-notify', 'DashboardController@buy_credit_notify');
+
+Route::get('/user-profile', 'DashboardController@user_dashboard')->middleware('auth');
+Route::get('/user-profile/edit', 'DashboardController@edit_user')->middleware('auth');
+Route::get('/user-profile/buy-credit', 'DashboardController@buy_credits_view')->middleware('auth');
+Route::get('/user-profile/buy-credit/confirm/{user_id}/{cart_id}', 'DashboardController@buy_credits_confirm')->middleware('auth');
+Route::get('/user-profile/buy-credit/done/{user_id}/{cart_id}', 'DashboardController@buy_credit_done')->middleware('auth');
+Route::get('/user-profile/buy-credit/cancel', 'DashboardController@buy_credit_cancel')->middleware('auth');
+Route::get('/user-profile/submit-voucher', 'VoucherController@enter_voucher')->middleware('auth');
+
+// Admins and Referees profile
+
+Route::post('/user-profile/admin/add-team', 'DashboardController@add_team')->middleware(CheckAdminUser::class)->middleware('auth');
+Route::post('/user-profile/admin/team-edit', 'DashboardController@edit_team')->middleware(CheckAdminUser::class)->middleware('auth');
+Route::post('/user-profile/admin/team/delete', 'DashboardController@delete_team')->middleware(CheckAdminUser::class)->middleware('auth');
+Route::post('/user-profile/admin/team/set-active', 'DashboardController@set_active_team')->middleware(CheckAdminUser::class)->middleware('auth');
+Route::post('/user-profile/admin/referee-edit', 'DashboardController@referee_save')->middleware(CheckAdmin::class)->middleware('auth');
+Route::post('/user-profile/admin/referee/delete', 'DashboardController@delete_referee')->middleware(CheckAdmin::class)->middleware('auth');
+Route::post('/user-profile/admin/referee/set-active', 'DashboardController@set_active_referee')->middleware(CheckAdmin::class)->middleware('auth');
+Route::post('/user-profile/admin/referee/new', 'DashboardController@referee_new')->middleware(CheckAdmin::class)->middleware('auth');
+
+
+Route::get('/user-profile/admin/teams', 'DashboardController@teams_view')->middleware(CheckAdminUser::class)->middleware('auth');
+Route::get('/user-profile/admin/referees', 'DashboardController@referees_view')->middleware(CheckAdmin::class)->middleware('auth');
+Route::get('/user-profile/admin/referees/edit/{referee_user_id}/{referee_user_name}', 'DashboardController@referee_edit')->middleware(CheckAdmin::class)->middleware('auth');
+
+// Superusers profile
+
+Route::post('/user-profile/superuser/venue/set-active', 'DashboardController@set_active_venue')->middleware(CheckSuperUser::class)->middleware('auth');
+Route::post('/user-profile/superuser/venue/save', 'DashboardController@venue_save')->middleware(CheckSuperUser::class)->middleware('auth');
+Route::post('/user-profile/superuser/venue/delete', 'DashboardController@venue_delete')->middleware(CheckSuperUser::class)->middleware('auth');
+
+Route::get('/user-profile/superuser/venues', 'DashboardController@venues')->middleware(CheckSuperUser::class)->middleware('auth');
+Route::get('/user-profile/superuser/venue/edit/{venue_id}/{venue_name}', 'DashboardController@venue_edit')->middleware(CheckSuperUser::class)->middleware('auth');
+Route::get('/user-profile/superuser/venue/new', 'DashboardController@venue_new')->middleware(CheckSuperUser::class)->middleware('auth');
+
+Route::post('/verify-email', 'Auth\VerifyAccountController@verify_submission')->middleware('auth');
+Route::get('/verify-email/{user_id}/{verify_token}', 'Auth\VerifyAccountController@verify_user')->middleware('auth');
+
 // Subscription payment routes
 Route::post('/subscription/checkout', 'SubscriptionController@post_subscription')->middleware('auth');
 Route::get('/subscription/checkout', 'SubscriptionController@checkout_subscription')->middleware('auth');
 
 Route::get('/subscription/success', 'SubscriptionController@success')->middleware('auth');
 Route::get('/subscription/cancel', 'SubscriptionController@cancel')->middleware('auth');
+Route::get('/subscription/error', 'SubscriptionController@error')->middleware('auth');
 
 Route::post('/subscription/notify', 'SubscriptionController@notify')->middleware('auth');

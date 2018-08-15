@@ -11,7 +11,7 @@
    @foreach($camera as $camera)
     <div class="row">
         <div class="col-12 col-md-9" style="padding:0px; margin-bottom: 15px;">
-        <video src="http://192.168.0.69:1935/VOD_STORAGE_2/mp4:{{$camera}}_source.mp4/playlist.m3u8" data-viblast-key="3234ee02-940e-4ee4-8a26-866bc45b4363" controls width="100%" height="auto"></video>
+        <video src="http://192.168.1.69:1935/VOD_STORAGE_2/mp4:{{$camera}}_source.mp4/playlist.m3u8" data-viblast-key="3234ee02-940e-4ee4-8a26-866bc45b4363" controls width="100%" height="auto"></video>
             <img src="{{asset('images/logo_2 PNG.png')}}" class="img-fluid" height="auto" width="50" style="position: absolute; top:10px; right: 10px;" />
         </div>
     </div>
