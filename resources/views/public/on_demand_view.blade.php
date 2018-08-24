@@ -163,7 +163,7 @@
             @foreach($vods_from_venue as $vod_item)
             @if($vod_item->stream_type == "vod")
             <div class="col-xs-2 col-md-3 vod-item vod-items">
-                <a href="/new/on-demand/{{$vod_item->id}}/{{$vod_item->name}}/" class="js-item">
+                <a href="/on-demand/indoor-soccer/{{$vod_item->id}}/{{$vod_item->name}}/" class="js-item">
                     <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
                     <i class="far fa-play-circle play-icon" style="display:none;"></i>
                     {{str_replace("_", " ", $vod_item->name)}}
@@ -179,7 +179,7 @@
 @section('modal')
 <!-- Modal for purchase request -->
 <div id="areYouSure" class="modal" tabindex="-1" role="dialog">
-    <form method="post" action="/on-demand/purchase">
+    <form method="post" action="/on-demand/indoor-soccer/purchase">
     {{ csrf_field() }}
     <input type="number" name="vod_id" hidden="true" value="{{$vod->id}}" readonly/>
     <input type="text" name="vod_name" hidden="true" value="{{$vod->name}}" readonly/>

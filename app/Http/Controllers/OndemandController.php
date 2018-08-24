@@ -191,7 +191,15 @@ class OndemandController extends Controller
     }
 
     // Views
-    public function index(Request $request)
+
+    public function index()
+    {
+
+
+        return view('public.on_demand_index');
+    }
+
+    public function index_indoor_soccer(Request $request)
     {
         $channels = \App\Venue::where('active_status', 'active')->get();
 
@@ -212,6 +220,13 @@ class OndemandController extends Controller
         $vods = \App\SquashStream::orderBy('created_at', 'desc')->where('stream_type', 'vod')->paginate(30);
 
         return view('public.on_demand_squash', ['vods' => $vods]);
+    }
+
+    public function index_soccer_schools(Request $request)
+    {
+        $vods = \App\SoccerSchoolsStream::orderBy('created_at', 'desc')->where('stream_type', 'vod')->paginate(30);
+
+        return view('public.on_demand_soccer_schools', ['vods' => $vods]);
     }
 
     public function vod_watch($id, $streamfile_name)
@@ -330,6 +345,42 @@ class OndemandController extends Controller
             'stream_available' => $stream_available]);
     }
 
+    public function vod_watch_soccer_schools($ss_stream_id, $stream_name)
+    {
+        $user = \Auth::user();
+        $vod = \App\SoccerSchoolsStream::find($ss_stream_id);
+        $session = \App\SoccerSchoolsSession::where('ss_stream_id', $ss_stream_id)->first();
+        $current_venue = \App\Venue::where('id', $vod->venue_id)->first();
+        $stream_available = false;
+        $is_subscribed_user = \App\SubscribedUser::where('user_id', $user->id)->first();
+        $vods_from_venue = \App\SoccerSchoolsStream::where('venue_id', $vod->venue_id)->paginate(15);
+
+
+        if($is_subscribed_user)
+        {
+            if($is_subscribed_user->status == 'active')
+            {
+                $is_single_access_user = \App\SingleAccessUser::where('user_id', $user->id)->first();
+
+                if($is_single_access_user)
+                {
+                    if($is_single_access_user->venue_id == $vod->venue_id) 
+                    {
+                        $stream_available = true;
+                    } 
+                } 
+            }
+        }
+
+        return view('public.on_demand_soccer_schools_view', [
+            'vod' => $vod,
+            'session' => $session,
+            'current_venue' => $current_venue,
+            'stream_available' => $stream_available,
+            'vods_from_venue' => $vods_from_venue,
+        ]);
+    }
+
     public function vod_purchase(Request $request)
     {
         $user = Auth::user();
@@ -343,7 +394,7 @@ class OndemandController extends Controller
         $stream_available = false;
         $sufficient_points = false;
 
-        return $this->purchase_access('/on-demand/'.$request->vod_id.'/'.$request->vod_name, 'action_sport', $request->vod_id, $request->vod_name);
+        return $this->purchase_access('/on-demand/indoor-soccer/'.$request->vod_id.'/'.$request->vod_name, 'action_sport', $request->vod_id, $request->vod_name);
 
     }
 

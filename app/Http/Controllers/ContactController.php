@@ -29,8 +29,28 @@ class ContactController extends Controller
 
         $data = [ 'user_query' => $request->user_query, 'email' => $request->email, 'name' => $request->name];
 
-        \Mail::to($request->email)->send(new MessageSentEmail($data));
-        \Mail::to('justin@paperclipsa.co.za')->send(new ContactEmail($data));
+        $beautymail = app()->make(\Snowfire\Beautymail\Beautymail::class);
+        $beautymail->send('emails.contact', $data, function($message) use($data)
+        {
+
+            $message
+                ->from('noreply@paperclipsa.co.za')
+                ->to('justin@yourdev.co.za', 'Justin')
+                ->subject('Paperclip SA Online Query');
+        });
+
+        $beautymail_message_sent = app()->make(\Snowfire\Beautymail\Beautymail::class);
+        $beautymail_message_sent->send('emails.messsage_sent', $data, function($message) use($data)
+        {
+
+            $message
+                ->from('noreply@paperclipsa.co.za')
+                ->to($data['email'], $data['name'])
+                ->subject('Paperclip SA Query Sent');
+        });
+
+        // \Mail::to($request->email)->send(new MessageSentEmail($data));
+        // \Mail::to('justin@paperclipsa.co.za')->send(new ContactEmail($data));
 
         \Session::flash('success', 'Your query has been sent.');
 

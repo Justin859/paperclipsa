@@ -82,13 +82,13 @@
                 <form action="/subscription/checkout" method="POST">
                 {{ csrf_field() }}
                     <div class="form-check form-check-inline">
-                        <label class="form-check-label container-w3" for="inlineRadio1">Single Channel Subscription <span class="badge badge-warning">R30.00</span>
+                        <label class="form-check-label container-w3" for="inlineRadio1">Single Channel Subscription &nbsp;<span class="badge badge-warning">R30.00</span><small>&nbsp;(Indoor soccer and soccer schools)</small>
                         <input class="form-check-input" checked="checked" type="radio" name="subscription_type" id="inlineRadio1" value="single_channel" />
                         <span class="checkmark"></span>
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <label class="form-check-label container-w3" for="inlineRadio2">Full Access Subscription <span class="badge badge-warning">R60.00</span>
+                        <label class="form-check-label container-w3" for="inlineRadio2">Full Access Subscription &nbsp;<span class="badge badge-warning">R60.00</span><small>&nbsp;(Indoor soccer only)</small>
                         <input class="form-check-input" type="radio" name="subscription_type" id="inlineRadio2" value="full_access" />
                         <span class="checkmark"></span>
                         </label>

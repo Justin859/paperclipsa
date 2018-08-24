@@ -30,7 +30,7 @@ class SquashRefereeController extends Controller
         return $response;
     }
 
-        // Function to check connected streamfile status. Wowza will return 'Recording in progress' if the stream is connected.
+    // Function to check connected streamfile status. Wowza will return 'Recording in progress' if the stream is connected.
     // Before checking wait 5 seconds to give the connection time to connect.
     // The streamfile and recorder will be removed if the stream is not connected properly
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Venue extends Model
 {
-    protected $fillable = ['admin_id', 'name', 'wow_app_name', 'username', 'password', 'description', 'phone', 'venue_ip', 'logo_img', 'banner_img', 'intro_vid_url', 'web_url', 'twitter_url', 'fb_url', 'active_status'];
+    protected $fillable = ['admin_id', 'name', 'wow_app_name', 'username', 'password', 'description', 'phone', 'venue_ip', 'logo_img', 'banner_img', 'intro_vid_url', 'web_url', 'twitter_url', 'fb_url', 'active_status', 'venue_type'];
 
     //protected $hidden = ['username', 'password',];
 

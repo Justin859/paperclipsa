@@ -15,5 +15,6 @@ class VerifyCsrfToken extends Middleware
         //
         'subscription/notify',
         'user-profile/buy-credit-notify',
+        'on-demand/notification',
     ];
 }

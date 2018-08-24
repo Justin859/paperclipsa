@@ -49,6 +49,17 @@ class RegistrationController extends Controller
             $credentials = $request->only('email', 'password');
             if (Auth::attempt($credentials)) {
                 // Authentication passed...
+                $data = ['email' => $request->email, 'name' => $request->firstname];
+                // Send Mail
+                $beautymail = app()->make(\Snowfire\Beautymail\Beautymail::class);
+                $beautymail->send('emails.welcome', $data, function($message) use($data)
+                {
+                    $message
+                        ->from('noreply@paperclipsa.co.za')
+                        ->to($data['email'], $data['name'])
+                        ->subject('Paperclip SA Registration');
+                });
+
                 \Session::flash('success', 'Registration complete.');
                 return redirect()->to('/user-profile/');
 

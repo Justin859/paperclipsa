@@ -31,8 +31,17 @@ class DashboardController extends Controller
         $subscribed_user = false;
         $user_streams = false;
         $email_verified = false;
+        $notification_teams = false;
 
+        $is_notified_user = \App\NotifiedUser::where('user_id', $user->id)->first();
+        $teams = \App\Team::where('active_status', 'active')->get();
         $account_verified = \App\VerifiedUser::where('user_id', $user->id)->first();
+
+        if($is_notified_user)
+        {
+            $teams_array = json_decode($is_notified_user->notifications, true)["teams"];
+            $notification_teams = \App\Team::whereIn('id', $teams_array)->get();
+        }
 
         if($account_verified)
         {
@@ -45,6 +54,7 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         if(\App\UserStreams::where('user_id', $user->id)->first())
         {
@@ -65,7 +75,9 @@ class DashboardController extends Controller
             $subscribed_user = true;
         }
         return view('users.dashboard', ['account_balance' => $account_balance, 'subscribed_user' => $subscribed_user,
-                                        'watch_again' => $watch_again, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'email_verified' => $email_verified]);
+                                        'watch_again' => $watch_again, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee,
+                                        'is_admin' => $is_admin, 'is_coach' => $is_coach, 'email_verified' => $email_verified,
+                                        'teams' => $teams, 'notification_teams' => $notification_teams]);
     }
 
     public function edit_user()
@@ -74,8 +86,10 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
-        return view('users.edit_details', ['user' => $user, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin]);
+        return view('users.edit_details', ['user' => $user, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee,
+                                           'is_admin' => $is_admin, 'is_coach' => $is_coach]);
     }
 
     public function  update_user(Request $request)
@@ -168,9 +182,9 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
-
-        return view('users.buy_credits', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin]);
+        return view('users.buy_credits', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach]);
     }
 
     public function buy_credits(Request $request)
@@ -209,12 +223,13 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $credit_cart = \App\CreditsCart::find($cart_id);
         
         if($user_id == $credit_cart->user_id)
         {
-            return view('users.buy_credits_confirm', ['credit_cart' => $credit_cart, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin]); 
+            return view('users.buy_credits_confirm', ['credit_cart' => $credit_cart, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin,  'is_coach' => $is_coach]); 
 
         } else {
             return abort(404);
@@ -335,11 +350,11 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         if($user_id == $user->id)
         {
-            return view('users.buy_credits_done', ['account_balance' => $account_balance, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin]);
+            return view('users.buy_credits_done', ['account_balance' => $account_balance, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach ]);
         } else {
             return abort(404);
         }
@@ -353,7 +368,7 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         if($credit_cart) {
             return view('users.buy_credits_cancel', ['cart_id' => $credit_cart->id, 'user_id' => $user->id,
@@ -394,12 +409,13 @@ class DashboardController extends Controller
 
     // Admins and Referee
 
-    public function teams_view(Request $request)
+    public function teams_view()
     {
         $user = \Auth::user();
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $venue = false;
         $teams = false;
@@ -420,7 +436,7 @@ class DashboardController extends Controller
             return abort(404);
         }
 
-        return view('admin_users.teams_view', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin,
+        return view('admin_users.teams_view', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach,
                                                'teams' => $teams]);
     }
 
@@ -431,6 +447,7 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $validatedData = $request->validate([
             'name' => 'required|unique:teams|max:100'
@@ -512,6 +529,7 @@ class DashboardController extends Controller
         $referees = \App\Referee::where('venue_id', $admin_user->venue_id)->get();
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
         $venue_id = $admin_user->venue_id;
         
@@ -523,7 +541,7 @@ class DashboardController extends Controller
         $referee_users = \App\User::whereIn('id', $referee_ids)->orderBy('firstname')->paginate(10);
 
         return view('admin.referees_view', ['referee_users' => $referee_users, 'is_superuser' => $is_superuser,
-                                            'is_referee' => $is_referee, 'is_admin' => $is_admin, 'venue_id' => $venue_id]);
+                                            'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach, 'venue_id' => $venue_id]);
     }
 
     public function referee_edit($referee_user_id, $referee_user_name)
@@ -532,13 +550,14 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
         $referee_user = \App\User::where(['id' => $referee_user_id, 'firstname' => $referee_user_name])->first();
         $referee = \App\Referee::where('user_id', $referee_user_id)->first();
 
         if($referee_user)
         {
             return view('admin.referee_edit', ['is_superuser' => $is_superuser, 'referee_user' => $referee_user, 'referee' => $referee,
-                                               'is_admin' => $is_admin, 'is_referee' => $is_referee]);
+                                               'is_admin' => $is_admin, 'is_coach' => $is_coach, 'is_referee' => $is_referee]);
 
         } else {
             return abort(404);
@@ -655,10 +674,11 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $venues = \App\Venue::orderBy('name')->paginate(5);
 
-        return view('superuser.venues', ['venues' => $venues, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin]);
+        return view('superuser.venues', ['venues' => $venues, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach ]);
     }
 
     public function venue_edit($venue_id, $venue_name)
@@ -667,11 +687,12 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
         $venue = \App\Venue::where([['id','=', $venue_id], ['name', '=', $venue_name]])->first();
 
         if($venue)
         {
-            return view('superuser.venue_edit', ['venue' => $venue, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin]);
+            return view('superuser.venue_edit', ['venue' => $venue, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach ]);
         } else {
             return abort(404);
         }        
@@ -683,8 +704,9 @@ class DashboardController extends Controller
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
         $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
-        return view('superuser.venue_new', ['is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin]);
+        return view('superuser.venue_new', ['is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach]);
 
     }
 
@@ -847,10 +869,15 @@ class DashboardController extends Controller
                 'wow_app_name' => 'required|string'
             ]);
 
+            $path_banner = $request->file('banner_img')->store('/venues/banners', 'public');
+            $path_logo = $request->file('logo_img')->store('/venues/logos', 'public');
+            $banner_img_name = explode('/', $path_banner)[2];
+            $logo_img_name = explode('/', $path_logo)[2];
+
             $new_venue = \App\Venue::create([
                 'name' => $request->name,
                 'active_status' => 'active',
-                'wow_app_name' => ucwords(str_replace(" ", "_", $request->name)),
+                'wow_app_name' => $request->wow_app_name,
                 'username' => $request->username,
                 'password' => $request->password,
                 'description' => $request->description,
@@ -901,6 +928,183 @@ class DashboardController extends Controller
             \Session::flash('success', $venue->name . ' has been deleted.');
         } else {
             \Session::flash('error', 'An internal server error has occured.' . $venue->name . ' has not been deleted. Please contact Paperlcip SA for assistance.');
+        }
+
+        return redirect()->back();
+    }
+
+    public function coaches()
+    {
+        $user = \Auth::user();
+        $coaches_ids = [];
+        $coaches = \App\Coach::all();
+        $is_referee = \App\Referee::where('user_id', $user->id)->first();
+        $is_admin = \App\Admin::where('user_id', $user->id)->first();
+        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
+        $soccer_schools = \App\Venue::where('venue_type', 'soccer_school')->get();
+
+        foreach($coaches as $coach)
+        {
+            array_push($coaches_ids, $coach->user_id);
+        }
+
+        $coach_users = \App\User::whereIn('id', $coaches_ids)->orderBy('firstname')->paginate(10);
+
+        return view('superuser.coaches', ['coach_users' => $coach_users, 'is_superuser' => $is_superuser,
+        'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach, 'soccer_schools' => $soccer_schools]);
+
+    }
+
+    public function coach_save(Request $request)
+    {
+        $validateedData = $request->validate([
+            'firstname' => 'required|string',
+            'surname' => 'required|string',
+            'email' => 'required|unique:users|email',
+            'gender' => 'required|string',
+            'venue_id' => 'required',
+            'password' => 'required|confirmed'
+        ]);
+
+        if($request->coach_id)
+        {
+            \Session::flash('success', 'Updated');
+
+        } else {
+            $new_coach_user = \App\User::create([
+                'firstname' => $request->firstname,
+                'surname' => $request->surname,
+                'email' => $request->email,
+                'gender' => $request->gender,
+                'password' => \Hash::make($request->password),
+                'last_login' => time()
+            ]);
+
+            if($new_coach_user)
+            {
+                $new_coach = \App\Coach::create([
+                    'user_id' => $new_coach_user->id,
+                    'active_status' => 'active',
+                    'venue_id' => $request->venue_id,
+                ]);
+                \Session::flash('success', 'Coach '. $new_coach_user->firstname . ' created.');
+
+            } else {
+                \Session::flash('error', 'There was an internal server error. Please contact Paperclip');
+            }
+        }
+
+        return redirect()->back();
+    }
+
+    public function set_active_coach(Request $request)
+    {
+        $coach = \App\Coach::where('user_id', $request->coach_id)->first();
+        $coach_user = \App\User::find($coach->user_id);
+
+        if($coach->active_status == 'suspended' or $coach->active_status == 'banned')
+        {
+            $coach->update(['active_status' => 'active']);
+            $coach_user->update(['active_status' => 'active']);
+        } else {
+            $coach->update(['active_status' => 'suspended']);
+            $coach_user->update(['active_status' => 'suspended']);
+        }
+
+        return redirect()->back();
+    }
+
+    // Coaches Dashboard
+
+    public function age_groups_view()
+    {
+        $user = \Auth::user();
+        $is_referee = \App\Referee::where('user_id', $user->id)->first();
+        $is_admin = \App\Admin::where('user_id', $user->id)->first();
+        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
+
+        $venue = \App\Venue::find($is_coach->venue_id);
+
+        $age_groups = \App\SoccerSchoolsAgeGroup::where('venue_id', $is_coach->venue_id)->orderBy('name')->paginate(15);
+
+        return view('coach.age_groups', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin,
+                                               'is_coach' => $is_coach, 'age_groups' => $age_groups]);
+    }
+
+    public function add_age_group(Request $request) 
+    {
+        $user = \Auth::user();
+        $venue_id = null;
+        $is_referee = \App\Referee::where('user_id', $user->id)->first();
+        $is_admin = \App\Admin::where('user_id', $user->id)->first();
+        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+        $is_coach = \App\Coach::where('user_id', $user->id)->first();
+
+        $validatedData = $request->validate([
+            'name' => 'required|unique:soccer_schools_age_groups|string|regex:/(^[a-zA-Z0-9_\s\-]*$)/u|max:100|min:2'
+        ]);
+
+        $venue_id = $is_coach->venue_id;
+        
+        $new_age_group = \App\SoccerSchoolsAgeGroup::create(['venue_id' => $venue_id, 'name' => $request->name, 'active_status' => 'active']);
+
+        if($new_age_group)
+        {
+            \Session::flash('success', "'".$request->name."' has been added as an age group.");
+        } else {
+            \Session::flash('error', "'".$request->name."' could not be added. An internal server error has occured.");
+        }     
+
+        return redirect()->back();
+    }
+
+    public function edit_age_group(Request $request)
+    {
+        $age_group = \App\SoccerSchoolsAgeGroup::find($request->age_group_id);
+
+        $validatedData = $request->validate([
+            'age_group_name' => 'required|max:100|string|regex:/(^[a-zA-Z0-9_\s\-]*$)/u|min:2'
+        ]);
+
+        $age_group->update(['name' => $request->age_group_name]);
+
+        if($age_group)
+        {
+            \Session::flash('success', $request->age_group_name.' has successfully been updated.');
+        } else {
+            \Session::flash('error', $request->age_group_name.' could not be updated. An internal server error has occured');
+        }
+
+        return redirect()->back();
+    }
+
+    public function delete_age_group(Request $request)
+    {
+        $age_group = \App\SoccerSchoolsAgeGroup::find($request->age_group_id);
+
+        $age_group_deleted = \App\SoccerSchoolsAgeGroup::find($request->age_group_id)->delete();
+
+        if($age_group_deleted)
+        {
+            \Session::flash('success', 'The team '.$age_group->name.' has been deleted.');
+        } else {
+            \Session::flash('error', 'The selected team has been deleted');
+        }
+        
+        return redirect()->back();
+    }
+
+    public function set_active_age_group(Request $request)
+    {
+        $age_group = \App\SoccerSchoolsAgeGroup::find($request->age_group_id);
+
+        if($age_group->active_status == 'suspended' or $age_group->active_status == 'banned')
+        {
+            $age_group->update(['active_status' => 'active']);
+        } else {
+            $age_group->update(['active_status' => 'suspended']);
         }
 
         return redirect()->back();

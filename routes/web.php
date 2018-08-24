@@ -15,6 +15,7 @@ use \App\Http\Middleware\CheckReferee;
 use \App\Http\Middleware\CheckSuperuser;
 use \App\Http\Middleware\CheckAdmin;
 use \App\Http\Middleware\CheckAdminUser;
+use \App\Http\Middleware\CheckCoach;
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,7 +23,7 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::post('/on-demand/purchase', 'OndemandController@vod_purchase')->name('on-demand-purchase')->middleware('auth');
+Route::post('/on-demand/indoor-soccer/purchase', 'OndemandController@vod_purchase')->name('on-demand-purchase')->middleware('auth');
 Route::post('/live-now/purchase', 'LiveNowController@live_squash_purchase')->name('live-purchase')->middleware('auth');
 
 Route::post('/on-demand/squash/purchase', 'OndemandController@vod_squash_purchase')->name('on-demand-squash-purchase')->middleware('auth');
@@ -46,15 +47,22 @@ Route::get('/channel/{venue_id}/{venue_name}/latest', 'HomeController@single_cha
 // End Channel Pages
 
 Route::get('/on-demand', 'OndemandController@index')->name('on-demand');
+
+Route::get('/on-demand/indoor-soccer', 'OndemandController@index_indoor_soccer')->name('on-demand-indoor-soccer');
 Route::get('/on-demand/squash', 'OndemandController@index_squash')->name('on-demand-squash');
-Route::get('/on-demand/{id}/{stream_filename}', 'OndemandController@vod_watch')->name('on-demand-view')->middleware('auth');
+Route::get('/on-demand/soccer-schools', 'OndemandController@index_soccer_schools')->name('on-demand-soccer-schools');
+Route::get('/on-demand/indoor-soccer/{id}/{stream_filename}', 'OndemandController@vod_watch')->name('on-demand-view')->middleware('auth');
 Route::get('/on-demand/squash/{id}/{streamfile_name}', 'OndemandController@vod_squash_watch')->name('on-demand-squash-view')->middleware('auth');
+Route::get('/on-demand/soccer-schools/{id}/{stream_filename}', 'OndemandController@vod_watch_soccer_schools')->name('on-demand-soccer-schools-view');
+
 Route::get('/live-now', 'LiveNowController@index')->name('live-now');
 Route::get('/live-now/{id}/{stream_name}', 'LiveNowController@watch')->name('live-now-watch')->middleware('auth');
+
 Route::get('/live-event/{id}/{event_name}', 'LiveNowController@event_live_watch')->name('event-live-watch')->middleware('auth');
 Route::get('/vod-event/{id}/{event_name}', 'OndemandController@ondemand_event_watch')->name('event-ondemand-watch')->middleware('auth');
 
 Route::get('/live-now/squash/{squash_stream_id}/{stream_name}', 'LiveNowController@watch_squash')->name('live-now-squash-watch')->middleware('auth');
+Route::get('/live-now/soccer-schools/{soccer_school_stream_id}/{stream_name}', 'LiveNowController@watch_soccer_schools')->name('live-now-soccer-schools-watch')->middleware('auth');
 
 // Referee Dashboard
 
@@ -74,13 +82,25 @@ Route::post('/referee/squash/update-scores', 'SquashRefereeController@updateScor
 Route::post('/referee/squash/stop-stream', 'SquashRefereeController@stopStream')->name('referee-squash-connect-streamfile')->middleware(CheckReferee::class)->middleware('auth');
 Route::post('/referee/squash/start-rally', 'SquashRefereeController@startRally')->name('referee-squash-start-recording')->middleware(CheckReferee::class)->middleware('auth');
 Route::post('/referee/squash/stop-rally', 'SquashRefereeController@stopRally')->name('referee-squash-stop-recording')->middleware(CheckReferee::class)->middleware('auth');
-Route::post('referee/squash/start-round-recording', 'SquashRefereeController@startRoundRecording')->name('referee-squash-start-round-recording')->middleware(CheckReferee::class)->middleware('auth');
+Route::post('/referee/squash/start-round-recording', 'SquashRefereeController@startRoundRecording')->name('referee-squash-start-round-recording')->middleware(CheckReferee::class)->middleware('auth');
 Route::post('/referee/squash/end-round-recording', 'SquashRefereeController@endRoundRecording')->name('referee-squash-end-round-recording')->middleware(CheckReferee::class)->middleware('auth');
 
 Route::get('/referee/squash/dashboard', 'SquashRefereeController@index')->name('referee-squash-dashboard')->middleware(CheckReferee::class)->middleware('auth');
 Route::get('/referee/squash/dashboard/fixture/{id}/{stream_name}', 'SquashRefereeController@viewStream')->name('referee-squash-view-stream')->middleware(CheckReferee::class)->middleware('auth');
 
 // End Referee Squash Dashboard
+
+// Soccer Schools Coach Dashboard
+
+Route::post('/coach/dashboard', 'CoachController@startStream')->name('coach-start-stream')->middleware(CheckCoach::class)->middleware('auth');
+Route::post('/coach/stop-stream', 'CoachController@stopStream')->name('coach-stop-stream')->middleware(CheckCoach::class)->middleware('auth');
+Route::post('/coach/dashboard/session/edit', 'CoachController@edit_session')->name('coach-edit-session')->middleware(CheckCoach::class)->middleware('auth');
+
+Route::get('/coach/dashboard', 'CoachController@index')->name('coach-dashboard')->middleware(CheckCoach::class)->middleware('auth');
+Route::get('/coach/dashboard/session/{id}/{stream_name}', 'CoachController@viewStream')->name('referee-view-stream')->middleware(CheckCoach::class)->middleware('auth');
+
+
+// End Soccer Schools Coach Dashboard
 
 // Super User Dashboard
 Route::post('/superuser/dashboard/startstream', 'SuperuserController@startStream')->name('superuser-dashboard-start-stream')->middleware(CheckSuperuser::class)->middleware('auth');
@@ -199,6 +219,27 @@ Route::get('/user-profile/superuser/venues', 'DashboardController@venues')->midd
 Route::get('/user-profile/superuser/venue/edit/{venue_id}/{venue_name}', 'DashboardController@venue_edit')->middleware(CheckSuperUser::class)->middleware('auth');
 Route::get('/user-profile/superuser/venue/new', 'DashboardController@venue_new')->middleware(CheckSuperUser::class)->middleware('auth');
 
+Route::get('/user-profile/superuser/admins', 'DashboardController@admins')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::get('/user-profile/superuser/admin/edit/{admin_user_id}/{admin_user_name}', 'DashboardController@admin_edit')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::get('/user-profile/superuser/admin/save', 'DashboardController@admin_save')->middleware(CheckSuperuser::class)->middleware('auth');
+
+Route::post('/user-profile/superuser/coach/save', 'DashboardController@coach_save')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::post('/user-profile/superuser/coach/set-active', 'DashboardController@set_active_coach')->middleware(CheckSuperuser::class)->middleware('auth');
+
+Route::get('/user-profile/superuser/coaches', 'DashboardController@coaches')->middleware(CheckSuperUser::class)->middleware('auth');
+Route::get('/user-profile/superuser/coach/edit/{coach_user_id}/{coach_user_name}', 'DashboardController@coach_edit')->middleware(CheckSuperuser::class)->middleware('auth');
+
+// Coaches profile 
+
+Route::post('/user-profile/coach/add-age-group', 'DashboardController@add_age_group')->middleware(CheckCoach::class)->middleware('auth');
+Route::post('/user-profile/coach/age-group-edit', 'DashboardController@edit_age_group')->middleware(CheckCoach::class)->middleware('auth');
+Route::post('/user-profile/coach/age-group/delete', 'DashboardController@delete_age_group')->middleware(CheckCoach::class)->middleware('auth');
+Route::post('/user-profile/coach/age-group/set-active', 'DashboardController@set_active_age_group')->middleware(CheckCoach::class)->middleware('auth');
+
+Route::get('/user-profile/coach/age-groups', 'DashboardController@age_groups_view')->middleware(CheckCoach::class)->middleware('auth');
+
+// End Coaches profile
+
 Route::post('/verify-email', 'Auth\VerifyAccountController@verify_submission')->middleware('auth');
 Route::get('/verify-email/{user_id}/{verify_token}', 'Auth\VerifyAccountController@verify_user')->middleware('auth');
 
@@ -211,3 +252,27 @@ Route::get('/subscription/cancel', 'SubscriptionController@cancel')->middleware(
 Route::get('/subscription/error', 'SubscriptionController@error')->middleware('auth');
 
 Route::post('/subscription/notify', 'SubscriptionController@notify')->middleware('auth');
+
+// Notification Urls
+
+Route::post('/on-demand/notification', 'NotificationController@on_demand_notification');
+Route::post('/get-notifications/team', 'NotificationController@subscribe_to_team')->middleware('auth');
+Route::post('/get-notifications/team/remove', 'NotificationController@cancel_team_notifications')->middleware('auth');
+
+Route::get('/test', function()
+{
+    $data = ['email' => 'warren@paperclipsa.co.za', 'name' => 'Warren', 'main_message' => 'The main message', 'url_link' => 'http://www.google.com'];
+    $beautymail = app()->make(Snowfire\Beautymail\Beautymail::class);
+
+    $beautymail->send('emails.verify_email', $data, function($message) use($data)
+    {
+        $email = $data['email'];
+        $name = $data['name'];
+
+        $message
+			->from('noreply@paperclipsa.co.za')
+			->to($email, $name)
+            ->subject('Welcome!');
+    });
+
+});

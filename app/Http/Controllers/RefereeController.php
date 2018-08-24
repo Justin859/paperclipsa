@@ -91,8 +91,7 @@ class RefereeController extends Controller
             $response_recording = $sf_recording->getAll();
         }
 
-
-        $teams = \App\Team::where('active_status', 'active')->orderby('name', 'ASC')->get();
+        $teams = \App\Team::where(['active_status' => 'active', 'venue_id' => $venue->id])->orderby('name', 'ASC')->get();
 
         $response_stream_file_list = false;
 
@@ -117,7 +116,7 @@ class RefereeController extends Controller
         ]);
 
         $uri = "rtsp://". $venue->username .":". $venue->password ."@" . $venue->venue_ip .":" .$request->camera_port. "/h264"; // ex. rtsp://admin:wel0v3mar@196.40.191.23:555/h264
-        $stream_file_name = $request->name;
+        $stream_file_name = preg_replace("/[^ \w]+/", "", $request->name);
         $application_name = $venue->wow_app_name;
         
         $setup = $this->getSettings();
@@ -173,7 +172,7 @@ class RefereeController extends Controller
                     if($request->stream_id and \App\Stream::find($request->stream_id)) {
                         $this->checkStreamConncetion($this->getsettings(), $venue->wow_app_name, $stream_file_name, $request->stream_id, $request->fixture_id);
                     } else {
-                        $new_stream = \App\Stream::create(['name' => $request->name, 'stream_type' => 'none', 'field_port' => $request->camera_port,
+                        $new_stream = \App\Stream::create(['name' => $stream_file_name, 'stream_type' => 'none', 'field_port' => $request->camera_port,
                                                            'venue_id' => $venue->id, 'uri' => 'rtsp://'.$venue->username.':'.$venue->password.'@'.$venue->venue_ip.':'.$request->camera_port.'/h264',
                                                            'http_url' => 'http://192.168.1.69:1935/'.$venue->wow_app_name.'/'.$request->name.'.stream_source/playlist.m3u8',
                                                            'storage_location' => "VOD_STORAGE_1"]);
@@ -272,7 +271,15 @@ class RefereeController extends Controller
         $stream->stream_type = "vod";
         $stream->save();
 
+        $fixture = \App\Fixture::where('stream_id', $stream->id)->first();
 
+        $check_notification = \App\OnDemandNotification::where('fixture_id', $fixture->id)->first();
+
+        if(!$check_notification)
+        {
+            $new_notification = \App\OnDemandNotification::create(['name' => $stream->name, 'fixture_id' => $fixture->id, 'sent'=> 0]);
+        }
+        
         return redirect()->to('/referee/dashboard');
         
     }

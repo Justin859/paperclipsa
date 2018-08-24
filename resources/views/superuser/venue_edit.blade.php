@@ -82,6 +82,7 @@
                     <select name="venue_type" class="form-control">
                         <option value="indoor_soccer" selected="selected">Indoor Soccer</option>
                         <option value="squash">Squash</option>
+                        <option value="soccer_school">Soccer School</option>
                     </select>
                 </div>
             </div>

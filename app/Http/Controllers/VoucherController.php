@@ -14,10 +14,11 @@ class VoucherController extends Controller
     {
         $user = \Auth::user();
 
+        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
 
-        return view('users.submit_voucher', ['is_referee' => $is_referee, 'is_admin' => $is_admin]);
+        return view('users.submit_voucher', ['is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_superuser' => $is_superuser]);
     }
 
     public function check_voucher(Request $request)

@@ -47,6 +47,8 @@
             <a href="/admin/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
             @elseif($is_referee)
             <a href="/referee/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
+            @elseif($is_coach)
+            <a href="/coach/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
             @endif
             @if($is_admin)
             <a href="/user-profile/admin/referees" class="main-side-bar-item"><li class="list-group-item">Referees &nbsp;&nbsp;<i class="fas fa-id-card-alt"></i></li></a>
@@ -56,6 +58,13 @@
                 <a href="/user-profile/admin/teams" class="main-side-bar-item"><li class="list-group-item active-sidebar">Teams &nbsp;&nbsp;<i class="fas fa-users"></i></li></a>
                 @else
                 <a href="/user-profile/admin/teams" class="main-side-bar-item"><li class="list-group-item">Teams &nbsp;&nbsp;<i class="fas fa-users"></i></li></a> 
+                @endif
+            @endif
+            @if($is_coach)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/coach/age-groups')
+                <a href="/user-profile/coach/age-groups" class="main-side-bar-item"><li class="list-group-item active-sidebar">Age Groups &nbsp;&nbsp;<i class="fas fa-users"></i></li></a>
+                @else
+                <a href="/user-profile/coach/age-groups" class="main-side-bar-item"><li class="list-group-item">Age Groups &nbsp;&nbsp;<i class="fas fa-users"></i></li></a> 
                 @endif
             @endif
             @if($_SERVER['REQUEST_URI'] == '/user-profile/edit')
@@ -68,6 +77,13 @@
                 <a href="/user-profile/superuser/venues" class="main-side-bar-item"><li class="list-group-item active-sidebar">Venues &nbsp;&nbsp;<i class="fas fa-map-marked-alt"></i></li></a>
                 @else
                 <a href="/user-profile/superuser/venues" class="main-side-bar-item"><li class="list-group-item">Venues &nbsp;&nbsp;<i class="fas fa-map-marked-alt"></i></li></a>
+                @endif
+            @endif
+            @if($is_superuser)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/superuser/coaches')
+                <a href="/user-profile/superuser/coaches" class="main-side-bar-item"><li class="list-group-item active-sidebar">Coaches &nbsp;&nbsp;<i class="fas fa-chalkboard-teacher"></i></li></a>
+                @else
+                <a href="/user-profile/superuser/coaches" class="main-side-bar-item"><li class="list-group-item">Coaches &nbsp;&nbsp;<i class="fas fa-chalkboard-teacher"></i></li></a>
                 @endif
             @endif
             @if($_SERVER['REQUEST_URI'] == '/user-profile/buy-credit')

@@ -75,6 +75,38 @@
 
 <div class="container">
 <br />
+<h2 class="main-heading" align="left">Live Soccer Schools Streams</h1>
+<hr />
+<div class="mx-auto px-1">
+        @if($soccer_school_live_streams->count())
+        <div class="row d-flex justify-content-center">
+        @foreach($soccer_school_live_streams as $soccer_school_live_stream)
+        <div class="col-xs-12 col-md-3 vod-item">
+            <div class="video-frame">
+            <a href="/live-now/soccer-schools/{{$soccer_school_live_stream->id}}/{{$soccer_school_live_stream->name}}/" class="js-item">
+                <img class="img-fluid" src="{{ asset('images/livestream_1.png')}}" height="218" width="auto" />
+                <i class="fas fa-play-circle play-live-icon" style="display:none;"></i>
+                <i class="fas fa-video live-video">&nbsp;&nbsp;<span class="live-text">Live</span></i>
+            </a>
+            </div>
+            <p style="color: #ffffff; margin: 0px;">{{ucwords(\App\SoccerSchoolsSession::where('ss_stream_id', $soccer_school_live_stream->id)->first()->age_group_id)}}</p>
+            <p style="color: #D3D3D3; margin: 0px;">{{\App\SoccerSchoolsSession::where('ss_stream_id', $soccer_school_live_stream->id)->first()->date_time}}</p>
+            <p style="color: #FFCC00; margin: 5px;">@<a href="/channel/{{$soccer_school_live_stream->venue_id}}/{{\App\Venue::find($soccer_school_live_stream->venue_id)->name}}" style="color: #FFCC00;">{{\App\Venue::find($soccer_school_live_stream->venue_id)->name}}</a></p>
+        </div>
+        @endforeach            
+        @else
+        <div align="left">
+            <h2>There are currently no soccer school live streams available. Come back soon.</h2>
+            <h3>Meanwhile, you can watch from our video-on-demand page <a href="/on-demand/soccer-schools">here.</a></h3>
+            <h3>Or view all our channels <a href="/channels">here.</a></h3>
+        </div>
+        @endif
+        </div>
+    </div>
+</div>
+
+<div class="container">
+<br />
 <h2 class="main-heading" align="left">Live Squash Streams</h1>
 <hr />
 <div class="mx-auto px-1">
@@ -97,7 +129,7 @@
         @else
         <div align="left">
             <h2>There are currently no squash live streams available. Come back soon.</h2>
-            <h3>Meanwhile, you can watch from our video-on-demand page <a href="/new/on-demand/squash">here.</a></h3>
+            <h3>Meanwhile, you can watch from our video-on-demand page <a href="/on-demand/squash">here.</a></h3>
             <h3>Or view all our channels <a href="/channels">here.</a></h3>
         </div>
         @endif

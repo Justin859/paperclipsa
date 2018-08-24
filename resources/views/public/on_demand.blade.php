@@ -55,7 +55,7 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <form action="/on-demand/" method="get">
+            <form action="/on-demand/indoor-soccer/" method="get">
                 <div class="form-group row">
                     <label for="select_channel" class="col-sm-2" style="color: white;"><strong>Select Channel</strong></label>
                     <select class="form-control-sm col-sm-2" id="select_channel" name="channel" onchange="this.form.submit()">
@@ -83,7 +83,7 @@
         @foreach($vods as $vod)
             @if($vod->stream_type == "vod")
             <div class="col-xs-12 col-md-3 vod-item">
-                <a href="/on-demand/{{$vod->id}}/{{$vod->name}}/" class="js-item">
+                <a href="/on-demand/indoor-soccer/{{$vod->id}}/{{$vod->name}}/" class="js-item">
                     <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
                     <i class="far fa-play-circle play-icon" style="display:none;"></i>
                 </a>

@@ -85,7 +85,7 @@
             @if($vod->stream_type == "vod")
             <div class="col-xs-12 col-md-3 vod-item">
                 @if($venue->venue_type != 'squash')
-                <a href="/on-demand/{{$vod->id}}/{{$vod->name}}/" class="js-item">
+                <a href="/on-demand/indoor-soccer/{{$vod->id}}/{{$vod->name}}/" class="js-item">
                     <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
                     <i class="far fa-play-circle play-icon" style="display:none;"></i>
                 </a>

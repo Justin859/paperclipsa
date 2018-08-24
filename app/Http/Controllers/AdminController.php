@@ -68,7 +68,7 @@ class AdminController extends Controller
 
        
         $new_stream = \App\Stream::create([
-            'name' => $request->name . "-00",
+            'name' => preg_replace("/[^ \w]+/", "", $request->name),
             'stream_type' => 'none',
             'venue_id' => $request->venue_id,
             'field_port' => $request->camera_port,

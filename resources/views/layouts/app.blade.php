@@ -196,11 +196,7 @@
                     @endif
                 </li>
                 <li class="nav-item dropdown active">
-                    <a class="nav-link dropdown-toggle" href="#" id="ondemandDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">On Demand <span class="sr-only"></span></a>
-                    <div class="dropdown-menu" aria-labelledby="ondemandDropdown">
-                        <a class="dropdown-item" href="/on-demand">Indoor Soccer</a>
-                        <a class="dropdown-item" href="/on-demand/squash">Squash</a>
-                    </div>
+                    <a class="nav-link" href="/on-demand">On Demand <span class="sr-only"></span></a>
                 </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="/contact">Contact Us <span class="sr-only"></span></a>
@@ -213,7 +209,7 @@
                 <!-- Authentication Links -->
                 @guest
                     <li><a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a></li>
-                    <li><a class="nav-link" href="/signup">{{ __('Register') }}</a></li>
+                    <li><a class="nav-link" href="/registration">{{ __('Register') }}</a></li>
                 @else
                     
                         <?php $user_profile = \App\UserProfile::where('user_id', Auth::user()->id)->first();?>

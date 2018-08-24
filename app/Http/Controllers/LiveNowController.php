@@ -196,10 +196,11 @@ class LiveNowController extends Controller
     {
         $live_streams = \App\Stream::where('stream_type', 'live')->get();
         $squash_live_streams = \App\SquashStream::where('stream_type', 'live')->get();
+        $soccer_school_live_streams = \App\SoccerSchoolsStream::where('stream_type', 'live')->get();
 
         $ads = \App\Advertisers::all();
 
-        return view('public.live_now', ['live_streams' => $live_streams, 'squash_live_streams' => $squash_live_streams, 'ads' => $ads]);
+        return view('public.live_now', ['live_streams' => $live_streams, 'squash_live_streams' => $squash_live_streams, 'soccer_school_live_streams' => $soccer_school_live_streams, 'ads' => $ads]);
     }
 
     public function watch($stream_id, $stream_name)
@@ -276,6 +277,41 @@ class LiveNowController extends Controller
         'account_balance' => $account_balance,
         'rounds' => $rounds,
         'round_points' => $round_points]);
+    }
+
+    public function watch_soccer_schools($ss_stream_id, $stream_name)
+    {
+        $user = \Auth::user();
+        $live = \App\SoccerSchoolsStream::find($ss_stream_id);
+        $session = \App\SoccerSchoolsSession::where('ss_stream_id', $ss_stream_id)->first();
+        $current_venue = \App\Venue::where('id', $live->venue_id)->first();
+        $stream_available = false;
+        $is_subscribed_user = \App\SubscribedUser::where('user_id', $user->id)->first();
+        $more_live_streams = \App\SoccerSchoolsStream::where('stream_type', 'live')->get(); 
+
+        if($is_subscribed_user)
+        {
+            if($is_subscribed_user->status == 'active')
+            {
+                $is_single_access_user = \App\SingleAccessUser::where('user_id', $user->id)->first();
+
+                if($is_single_access_user)
+                {
+                    if($is_single_access_user->venue_id == $live->venue_id) 
+                    {
+                        $stream_available = true;
+                    } 
+                } 
+            }
+        }
+
+        return view('public.live_now_soccer_schools_view', [
+            'live' => $live,
+            'session' => $session,
+            'current_venue' => $current_venue,
+            'more_live_streams' => $more_live_streams,
+            'stream_available' => $stream_available
+        ]);
     }
 
     public function vod_purchase(Request $request, $vod_id, $vod_name)
