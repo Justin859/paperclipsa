@@ -42,13 +42,13 @@
 
         .vod-item
         {
-        padding:1px !important;
-        margin: 0px !important;
+            padding: 3px !important;
+            margin: 0px !important;
         }
         .vod-item a
         {
-        text-decoration: none;
-        color: #ffffff;
+            text-decoration: none;
+            color: #ffffff;
 
         }
         .vod-item a:hover
@@ -66,6 +66,26 @@
             position: absolute;
             top: 5px;
             right: 5px;
+        }
+
+        .vod-wrapper
+        {
+            position: relative;
+            max-width: 1161px;
+            max-height: 595px;
+            padding: 0px;
+        }
+
+        .video-duration
+        {
+            font-size: 14px;
+            color: #ffffff;
+            position: absolute;
+            right: 0px;
+            bottom: 0px;
+            padding-right: 5px;
+            padding-left: 5px;
+            background-color: rgba(213, 0, 0, 0.7)
         }
 
         .main-heading

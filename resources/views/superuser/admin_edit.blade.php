@@ -13,7 +13,7 @@
     <div class="row">
         <div class="col-12 col-md-9 order-md-2">
         <br />
-        <h2 style="color:#ffffff;">Edit Coach</h2>
+        <h2 style="color:#ffffff;">Edit Admin</h2>
         <hr />
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -24,20 +24,20 @@
                 </ul>
             </div>
         @endif
-        <form method="post" action="/user-profile/superuser/coach/save" name="update_profile" id="update_profile" class="needs-validation" novalidate>
+        <form method="post" action="/user-profile/superuser/admin/save" name="update_profile" id="update_profile" class="needs-validation" novalidate>
         {{ csrf_field() }}
-        <input type="hidden" name="coach_user_id" value="{{$coach_user->id}}" required/>
+        <input type="hidden" name="admin_user_id" value="{{$admin_user->id}}" required/>
         <div class="form-row">
             <div class="col-md-4 mb-3">
             <label for="validationTooltip01">First name</label>
-            <input type="text" class="form-control" name="firstname" id="validationTooltip01" placeholder="First name" value="{{$coach_user->firstname}}" required>
+            <input type="text" class="form-control" name="firstname" id="validationTooltip01" placeholder="First name" value="{{$admin_user->firstname}}" required>
             <div class="invalid-tooltip">
                 Please provide a first name.
             </div>
             </div>
             <div class="col-md-4 mb-3">
             <label for="validationTooltip02">Last name</label>
-            <input type="text" class="form-control" name="surname" id="validationTooltip02" placeholder="Last name" value="{{$coach_user->surname}}" required>
+            <input type="text" class="form-control" name="surname" id="validationTooltip02" placeholder="Last name" value="{{$admin_user->surname}}" required>
             <div class="invalid-tooltip">
                 Please provide a last name.
             </div>
@@ -45,7 +45,7 @@
             <div class="col-md-4 mb-3">
             <label for="validationTooltipEmail">Email address</label>
             <div class="input-group">
-                <input type="email" class="form-control" name="email" id="validationTooltipEmail" value="{{$coach_user->email}}" placeholder="Email address" aria-describedby="validationTooltipEmailPrepend" required>
+                <input type="email" class="form-control" name="email" id="validationTooltipEmail" value="{{$admin_user->email}}" placeholder="Email address" aria-describedby="validationTooltipEmailPrepend" required>
                 <div class="invalid-tooltip">
                 Please choose a valid email address.
                 </div>
@@ -56,7 +56,7 @@
             <div class="col-md-4 mb-3">
             <label for="validationTooltip08">Gender</label>
             <select type="text" class="form-control" name="gender" id="validationTooltip08">
-                @if($coach_user->gender == 'none' or $coach_user->gender == 'm')
+                @if($admin_user->gender == 'none' or $admin_user->gender == 'm')
                 <option value="m" selected="selected">Male</option>
                 <option value="f">Female</option>
                 @else
@@ -84,7 +84,7 @@
             </div> 
         </div>
         <div class="btn-group float-right" style="margin-bottom: 15px;" role="group" aria-label="form buttons">
-            <a href="/user-profile/admin/coaches" class="btn btn-outline-danger">Back</a>
+            <a href="/user-profile/superuser/admins" class="btn btn-outline-danger">Back</a>
             <button class="btn btn-outline-warning" type="submit">Save</button>
         </div>
         </form>

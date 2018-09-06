@@ -16,6 +16,7 @@ use \App\Http\Middleware\CheckSuperuser;
 use \App\Http\Middleware\CheckAdmin;
 use \App\Http\Middleware\CheckAdminUser;
 use \App\Http\Middleware\CheckCoach;
+use \App\Http\Middleware\CheckClubAdmin;
 
 Route::get('/', function () {
     return view('welcome');
@@ -43,6 +44,8 @@ Route::get('/channels/', 'HomeController@channels')->name('channels');
 Route::get('/channel/{venue_id}/{venue_name}', 'HomeController@single_channel_main')->name('single-channel');
 Route::get('/channel/{venue_id}/{venue_name}/on-demand', 'HomeController@single_channel_odv')->name('single-channel-odv');
 Route::get('/channel/{venue_id}/{venue_name}/latest', 'HomeController@single_channel_latest')->name('single-channel-latest');
+Route::get('/channel/{venue_id}/{venue_name}/clubs', 'HomeController@clubs')->name('clubs');
+Route::get('/channel/{venue_id}/{venue_name}/clubs/{club_id}/{club_name}', 'HomeController@club')->name('club');
 
 // End Channel Pages
 
@@ -193,6 +196,26 @@ Route::get('/user-profile/buy-credit/done/{user_id}/{cart_id}', 'DashboardContro
 Route::get('/user-profile/buy-credit/cancel', 'DashboardController@buy_credit_cancel')->middleware('auth');
 Route::get('/user-profile/submit-voucher', 'VoucherController@enter_voucher')->middleware('auth');
 
+// Soccer Club Views
+
+Route::get('/user-profile/my-soccer-clubs', 'DashboardController@club_index')->middleware('auth');
+Route::get('/user-profile/my-soccer-clubs/{club_id}/{club_name}', 'DashboardController@club_view')->middleware('auth');
+
+// End Soccer Club Views
+
+// Team Admin Views
+Route::post('/user-profile/team-admin/notifications/request', 'DashboardController@player_notification_request')->middleware(CheckClubAdmin::class)->middleware('auth');
+Route::post('/user-profile/team-admin/my-soccer-club/save', 'DashboardController@club_save')->middleware(CheckClubAdmin::class)->middleware('auth');
+Route::post('/user-profile/team-admin/my-soccer-club/player/add', 'DashboardController@add_player')->middleware(CheckClubAdmin::class)->middleware('auth');
+Route::post('/user-profile/team-admin/my-soccer-club/player/delete', 'DashboardController@remove_player')->middleware(CheckClubAdmin::class)->middleware('auth');
+Route::post('/user-profile/team-admin/my-soccer-club/player/active-status', 'DashboardController@player_status')->middleware(CheckClubAdmin::class)->middleware('auth');
+
+Route::get('/user-profile/team-admin/notifications', 'DashboardController@team_admin_notifications')->middleware(CheckClubAdmin::class)->middleware('auth');
+Route::get('/user-profile/my-soccer-clubs/{club_id}/{club_name}/edit', 'DashboardController@club_edit')->middleware(CheckClubAdmin::class)->middleware('auth');
+Route::get('/user-profile/my-soccer-clubs/{club_id}/{club_name}/players/edit', 'DashboardController@club_player_edit')->middleware(CheckClubAdmin::class)->middleware('auth');
+
+// End Team Admin Views
+
 // Admins and Referees profile
 
 Route::post('/user-profile/admin/add-team', 'DashboardController@add_team')->middleware(CheckAdminUser::class)->middleware('auth');
@@ -203,11 +226,16 @@ Route::post('/user-profile/admin/referee-edit', 'DashboardController@referee_sav
 Route::post('/user-profile/admin/referee/delete', 'DashboardController@delete_referee')->middleware(CheckAdmin::class)->middleware('auth');
 Route::post('/user-profile/admin/referee/set-active', 'DashboardController@set_active_referee')->middleware(CheckAdmin::class)->middleware('auth');
 Route::post('/user-profile/admin/referee/new', 'DashboardController@referee_new')->middleware(CheckAdmin::class)->middleware('auth');
-
+Route::post('/user-profile/admin/notifications/request', 'DashboardController@notification_request')->middleware(CheckAdminUser::class)->middleware('auth');
 
 Route::get('/user-profile/admin/teams', 'DashboardController@teams_view')->middleware(CheckAdminUser::class)->middleware('auth');
 Route::get('/user-profile/admin/referees', 'DashboardController@referees_view')->middleware(CheckAdmin::class)->middleware('auth');
 Route::get('/user-profile/admin/referees/edit/{referee_user_id}/{referee_user_name}', 'DashboardController@referee_edit')->middleware(CheckAdmin::class)->middleware('auth');
+Route::get('/user-profile/admin/notifications', 'DashboardController@notification_view')->middleware(CheckAdminUser::class)->middleware('auth');
+
+// Club managers
+
+Route::get('/user-profile/club-manager')->middleware(CheckClubAdmin::class)->middleware('auth');
 
 // Superusers profile
 
@@ -221,9 +249,12 @@ Route::get('/user-profile/superuser/venue/new', 'DashboardController@venue_new')
 
 Route::get('/user-profile/superuser/admins', 'DashboardController@admins')->middleware(CheckSuperuser::class)->middleware('auth');
 Route::get('/user-profile/superuser/admin/edit/{admin_user_id}/{admin_user_name}', 'DashboardController@admin_edit')->middleware(CheckSuperuser::class)->middleware('auth');
-Route::get('/user-profile/superuser/admin/save', 'DashboardController@admin_save')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::post('/user-profile/superuser/admin/save', 'DashboardController@admin_save')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::post('/user-profile/superuser/admin/delete', 'DashboardController@admin_delete')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::post('/user-profile/superuser/admin/set-active', 'DashboardController@set_active_admin')->middleware(CheckSuperuser::class)->middleware('auth');
 
 Route::post('/user-profile/superuser/coach/save', 'DashboardController@coach_save')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::post('/user-profile/superuser/coach/delete', 'DashboardController@coach_delete')->middleware(CheckSuperuser::class)->middleware('auth');
 Route::post('/user-profile/superuser/coach/set-active', 'DashboardController@set_active_coach')->middleware(CheckSuperuser::class)->middleware('auth');
 
 Route::get('/user-profile/superuser/coaches', 'DashboardController@coaches')->middleware(CheckSuperUser::class)->middleware('auth');
@@ -276,3 +307,7 @@ Route::get('/test', function()
     });
 
 });
+
+// Club Management Routes
+
+Route::post('/join-club/request', 'ClubController@join_club_request')->middleware('auth');

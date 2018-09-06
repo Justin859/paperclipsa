@@ -34,13 +34,13 @@
 	@include('beautymail::templates.widgets.articleStart')
 
 		<h4 class="secondary"><strong>Click the link below to verify your email address</strong></h4>
-        <a href="http://paperclipsa.local/verify-email/123/123" class="button-success">Complete Verification</a>
+        <a href="http://paperclipsa.local/verify-email/{{$user_id}}/{{$verifyToken}}" class="button-success">Complete Verification</a>
 	@include('beautymail::templates.widgets.articleEnd')
 
 
 	@include('beautymail::templates.widgets.newfeatureStart')
 
-		<p>If you did not request to verify your email address you can igore this email.</p>
+		<p>If you did not request to verify your email address you can ignore this email. {{$verifyToken}}</p>
 
 	@include('beautymail::templates.widgets.newfeatureEnd')
 

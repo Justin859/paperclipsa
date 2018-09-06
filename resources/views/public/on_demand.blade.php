@@ -83,12 +83,18 @@
         @foreach($vods as $vod)
             @if($vod->stream_type == "vod")
             <div class="col-xs-12 col-md-3 vod-item">
+                <div class="vod-wrapper">
                 <a href="/on-demand/indoor-soccer/{{$vod->id}}/{{$vod->name}}/" class="js-item">
-                    <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
+                    <img src="{{ asset('images/vod_1.png')}}" height="auto" width="100%" />
                     <i class="far fa-play-circle play-icon" style="display:none;"></i>
                 </a>
-                <p style="color: #ffffff; margin: 5px;">{{str_replace("_", " ", $vod->name)}}</p>
-                <p style="color: #ffffff; margin: 5px;">@<a href="#">{{\App\Venue::find($vod->venue_id)->name}}</a></p>
+                @if($vod->duration)
+                <span class="video-duration">{{gmdate("H:i:s" ,$vod->duration)}}</span>
+                @endif
+                </div>
+                <p style="color: #ffffff; margin: 0px;">{{ucwords(\App\Fixture::where('stream_id', $vod->id)->first()->team_a)}} VS {{ucwords(\App\Fixture::where('stream_id', $vod->id)->first()->team_b)}}</p>
+                <p style="color: #D3D3D3; margin: 0px;">{{\App\Fixture::where('stream_id', $vod->id)->first()->date_time}}</p>
+                <p style="color: #FFCC00; margin: 0px; margin-bottom: 5px;">@<a href="/channel/{{$vod->venue_id}}/{{\App\Venue::find($vod->venue_id)->name}}" style="color: #FFCC00;">{{\App\Venue::find($vod->venue_id)->name}}</a></p>
             </div>
             @endif
         @endforeach

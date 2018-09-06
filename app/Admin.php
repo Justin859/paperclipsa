@@ -12,7 +12,7 @@ class Admin extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'last_login', 'active_status'
+        'user_id', 'last_login', 'active_status', 'venue_id'
     ];
 
     // user that owns this admin or field manager account

@@ -1,7 +1,53 @@
+<?php 
+    $user = \Auth::user();
+    $user_profile = \App\UserProfile::where('user_id', \Auth::user()->id)->first();
+    $is_referee = \App\Referee::where('user_id', $user->id)->first();
+    $is_admin = \App\Admin::where('user_id', $user->id)->first();
+    $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+    $is_coach = \App\Coach::where('user_id', $user->id)->first();
+    $is_team_admin = \App\TeamAdmin::where('user_id', $user->id)->first();
+    $is_team_player = \App\TeamPlayer::where('user_id', $user->id)->first();
+?>
+<?php 
+    $venue = null;
+    if($is_admin)
+    {
+        $venue = \App\Venue::find($is_admin->venue_id);
+        $admin_notifications = \App\TeamAdminRequest::where(['venue_id' => $venue->id, 'status' => 'pending'])->count();
+        $player_notifications = \App\TeamPlayerRequest::where(['venue_id' => $venue->id, 'status' => 'pending'])->count();
+
+        $notifications_admin = $admin_notifications;
+
+    } else if($is_referee) {
+        $venue = \App\Venue::find($is_referee->venue_id);
+        $admin_notifications = \App\TeamAdminRequest::where(['venue_id' => $venue->id, 'status' => 'pending'])->count();
+        $player_notifications = \App\TeamPlayerRequest::where(['venue_id' => $venue->id, 'status' => 'pending'])->count();
+
+        $notifications_admin = $admin_notifications;
+    }
+
+    if($is_team_admin)
+    {
+        $team_ids = [];
+        $team = \App\Team::find($is_team_admin->team_id);
+        $venue = \App\Venue::find($team->venue_id);
+
+        $admin_to_teams = \App\TeamAdmin::where('user_id', $user->id)->get();
+
+        foreach($admin_to_teams as $admin_to_team)
+        {
+            array_push($team_ids, $admin_to_team->team_id);
+        }
+
+        $player_notifications = \App\TeamPlayerRequest::whereIn('team_id', $team_ids)->where(['venue_id' => $venue->id, 'status' => 'pending'])->count();
+
+        $notifications_team_admin = $player_notifications;
+    }
+
+
+?>
 <div class="col-12 col-md-3 order-md-1">
     <div class="card">
-        <?php $user_profile = \App\UserProfile::where('user_id', \Auth::user()->id)->first(); ?>
-
         @if($user_profile)
         <div class="container-image">
             <form method="post" action="/user-profile/image-change" name="change_image" id="change_image_form" style="padding: 0px; margin: 0px;" enctype="multipart/form-data">
@@ -46,7 +92,11 @@
             @if($is_admin)
             <a href="/admin/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
             @elseif($is_referee)
-            <a href="/referee/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
+                @if(\App\Venue::find($is_referee->venue_id)->venue_type == 'indoor_soccer')
+                <a href="/referee/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
+                @elseif(\App\Venue::find($is_referee->venue_id)->venue_type == 'squash')
+                <a href="/referee/squash/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
+                @endif
             @elseif($is_coach)
             <a href="/coach/dashboard" class="main-side-bar-item"><li class="list-group-item">Dashboard &nbsp;&nbsp;<i class="fas fa-tachometer-alt"></i></li></a>
             @endif
@@ -72,6 +122,27 @@
             @else
             <a href="/user-profile/edit" class="main-side-bar-item"><li class="list-group-item">Edit Profile &nbsp;&nbsp;<i class="far fa-edit"></i></li></a>
             @endif
+            @if(!$is_admin and !$is_referee)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/my-soccer-clubs')
+                <a href="/user-profile/my-soccer-clubs" class="main-side-bar-item"><li class="list-group-item active-sidebar">My Soccer Clubs &nbsp;&nbsp;<i class="fas fa-shield-alt"></i></li></a>
+                @else
+                <a href="/user-profile/my-soccer-clubs" class="main-side-bar-item"><li class="list-group-item">My Soccer Clubs &nbsp;&nbsp;<i class="fas fa-shield-alt"></i></li></a>
+                @endif
+            @endif
+            @if($is_admin or $is_referee)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/admin/notifications')
+                <a href="/user-profile/admin/notifications" class="main-side-bar-item"><li class="list-group-item active-sidebar">Notifications &nbsp;&nbsp;<i class="far fa-bell"></i>&nbsp;&nbsp; <span class="badge badge-warning float-right">{{$notifications_admin}}</span></li></a>
+                @else
+                <a href="/user-profile/admin/notifications" class="main-side-bar-item"><li class="list-group-item">Notifications &nbsp;&nbsp;<i class="far fa-bell"></i>&nbsp;&nbsp; <span class="badge badge-warning float-right">{{$notifications_admin}}</span></li></a>
+                @endif
+            @endif
+            @if($is_team_admin)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/team-admin/notifications')
+                <a href="/user-profile/team-admin/notifications" class="main-side-bar-item"><li class="list-group-item active-sidebar">Notifications &nbsp;&nbsp;<i class="far fa-bell"></i>&nbsp;&nbsp; <span class="badge badge-warning float-right">{{$notifications_team_admin}}</span></li></a>
+                @else
+                <a href="/user-profile/team-admin/notifications" class="main-side-bar-item"><li class="list-group-item">Notifications &nbsp;&nbsp;<i class="far fa-bell"></i>&nbsp;&nbsp; <span class="badge badge-warning float-right">{{$notifications_team_admin}}</span></li></a>
+                @endif
+            @endif
             @if($is_superuser)
                 @if($_SERVER['REQUEST_URI'] == '/user-profile/superuser/venues')
                 <a href="/user-profile/superuser/venues" class="main-side-bar-item"><li class="list-group-item active-sidebar">Venues &nbsp;&nbsp;<i class="fas fa-map-marked-alt"></i></li></a>
@@ -80,10 +151,17 @@
                 @endif
             @endif
             @if($is_superuser)
-                @if($_SERVER['REQUEST_URI'] == '/user-profile/superuser/coaches')
-                <a href="/user-profile/superuser/coaches" class="main-side-bar-item"><li class="list-group-item active-sidebar">Coaches &nbsp;&nbsp;<i class="fas fa-chalkboard-teacher"></i></li></a>
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/superuser/admins')
+                <a href="/user-profile/superuser/admins" class="main-side-bar-item"><li class="list-group-item active-sidebar">Venue Admins &nbsp;&nbsp;<i class="fas fa-id-card-alt"></i></li></a>
                 @else
-                <a href="/user-profile/superuser/coaches" class="main-side-bar-item"><li class="list-group-item">Coaches &nbsp;&nbsp;<i class="fas fa-chalkboard-teacher"></i></li></a>
+                <a href="/user-profile/superuser/admins" class="main-side-bar-item"><li class="list-group-item">Venue Admins &nbsp;&nbsp;<i class="fas fa-id-card-alt"></i></li></a>
+                @endif
+            @endif
+            @if($is_superuser)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/superuser/coaches')
+                <a href="/user-profile/superuser/coaches" class="main-side-bar-item"><li class="list-group-item active-sidebar">Venue Coaches &nbsp;&nbsp;<i class="fas fa-chalkboard-teacher"></i></li></a>
+                @else
+                <a href="/user-profile/superuser/coaches" class="main-side-bar-item"><li class="list-group-item">Venue Coaches &nbsp;&nbsp;<i class="fas fa-chalkboard-teacher"></i></li></a>
                 @endif
             @endif
             @if($_SERVER['REQUEST_URI'] == '/user-profile/buy-credit')

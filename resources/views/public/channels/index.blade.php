@@ -68,6 +68,9 @@
             <div class="btn-group" role="group" aria-label="Basic example">
                 <a href="/channel/{{$venue->id}}/{{$venue->name}}" class="btn btn-outline-danger">Channel</a>
                 <a href="/channel/{{$venue->id}}/{{$venue->name}}/on-demand" class="btn btn-outline-danger">On-Demand</a>
+                @if($venue->venue_type == 'indoor_soccer')
+                <a href="/channel/{{$venue->id}}/{{$venue->name}}/clubs" class="btn btn-outline-danger">Clubs</a>
+                @endif
             </div>
         </div>
         <br />
@@ -86,7 +89,7 @@
                 <div class="col-xs-12 col-md-3 vod-item">
                     @if($venue->venue_type != 'squash')
                     <a href="/on-demand/indoor-soccer/{{$vod->id}}/{{$vod->name}}/" class="js-item">
-                        <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
+                        <img src="{{ asset('images/vod_1.png')}}" height="auto" width="100%" />
                         <i class="far fa-play-circle play-icon" style="display:none;"></i>
                     </a>
                     @else

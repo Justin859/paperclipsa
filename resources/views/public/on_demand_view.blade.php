@@ -159,19 +159,29 @@
             <hr />
         </div>
     </div>
-    <div class="row d-flex justify-content-center">
+    <div class="mx-auto px-1">
+        <div class="row d-flex justify-content-center">
             @foreach($vods_from_venue as $vod_item)
-            @if($vod_item->stream_type == "vod")
-            <div class="col-xs-2 col-md-3 vod-item vod-items">
-                <a href="/on-demand/indoor-soccer/{{$vod_item->id}}/{{$vod_item->name}}/" class="js-item">
-                    <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
-                    <i class="far fa-play-circle play-icon" style="display:none;"></i>
-                    {{str_replace("_", " ", $vod_item->name)}}
-                </a>
-            </div>
-            @endif
-        @endforeach
+                @if($vod->stream_type == "vod")
+                <div class="col-xs-12 col-md-3 vod-item">
+                    <div class="vod-wrapper">
+                    <a href="/on-demand/indoor-soccer/{{$vod_item->id}}/{{$vod_item->name}}/" class="js-item">
+                        <img src="{{ asset('images/vod_1.png')}}" height="auto" width="100%" />
+                        <i class="far fa-play-circle play-icon" style="display:none;"></i>
+                    </a>
+                    @if($vod_item->duration)
+                    <span class="video-duration">{{gmdate("H:i:s" ,$vod_item->duration)}}</span>
+                    @endif
+                    </div>
+                    <p align="left" style="color: #ffffff; margin: 0px;">{{ucwords(\App\Fixture::where('stream_id', $vod_item->id)->first()->team_a)}} VS {{ucwords(\App\Fixture::where('stream_id', $vod_item->id)->first()->team_b)}}</p>
+                    <p align="left" style="color: #D3D3D3; margin: 0px;">{{\App\Fixture::where('stream_id', $vod_item->id)->first()->date_time}}</p>
+                    <p align="left" style="color: #FFCC00; margin: 0px; margin-bottom: 5px;">@<a href="/channel/{{$vod->venue_id}}/{{\App\Venue::find($vod_item->venue_id)->name}}" style="color: #FFCC00;">{{\App\Venue::find($vod_item->venue_id)->name}}</a></p>
+                </div>
+                @endif
+            @endforeach
+        </div>
     </div>
+</div>
 
 </div>
 

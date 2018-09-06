@@ -83,13 +83,8 @@ class DashboardController extends Controller
     public function edit_user()
     {
         $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
-        return view('users.edit_details', ['user' => $user, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee,
-                                           'is_admin' => $is_admin, 'is_coach' => $is_coach]);
+        return view('users.edit_details', ['user' => $user]);
     }
 
     public function  update_user(Request $request)
@@ -177,14 +172,8 @@ class DashboardController extends Controller
     }
 
     public function buy_credits_view()
-    {
-        $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
-
-        return view('users.buy_credits', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach]);
+    {      
+        return view('users.buy_credits');
     }
 
     public function buy_credits(Request $request)
@@ -220,16 +209,12 @@ class DashboardController extends Controller
     public function buy_credits_confirm($user_id, $cart_id)
     {
         $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $credit_cart = \App\CreditsCart::find($cart_id);
         
         if($user_id == $credit_cart->user_id)
         {
-            return view('users.buy_credits_confirm', ['credit_cart' => $credit_cart, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin,  'is_coach' => $is_coach]); 
+            return view('users.buy_credits_confirm', ['credit_cart' => $credit_cart]); 
 
         } else {
             return abort(404);
@@ -347,14 +332,10 @@ class DashboardController extends Controller
     {
         $user = \Auth::user();
         $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         if($user_id == $user->id)
         {
-            return view('users.buy_credits_done', ['account_balance' => $account_balance, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach ]);
+            return view('users.buy_credits_done', ['account_balance' => $account_balance ]);
         } else {
             return abort(404);
         }
@@ -365,14 +346,9 @@ class DashboardController extends Controller
     {
         $user = \Auth::user();
         $credit_cart = \App\CreditsCart::where('user_id', $user->id)->first();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         if($credit_cart) {
-            return view('users.buy_credits_cancel', ['cart_id' => $credit_cart->id, 'user_id' => $user->id,
-                        'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin]);
+            return view('users.buy_credits_cancel', ['cart_id' => $credit_cart->id, 'user_id' => $user->id]);
     
         } else {
             return abort(404);
@@ -389,15 +365,7 @@ class DashboardController extends Controller
         - schedule matches
     */
 
-    public function admin_dashboard()
-    {
-        return view();
-    }
-
-    public function update_venue(Request $request)
-    {
-        return redirect()->to('');
-    }
+ 
 
     // Referee Dashboard
     /*
@@ -414,8 +382,6 @@ class DashboardController extends Controller
         $user = \Auth::user();
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $venue = false;
         $teams = false;
@@ -436,8 +402,7 @@ class DashboardController extends Controller
             return abort(404);
         }
 
-        return view('admin_users.teams_view', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach,
-                                               'teams' => $teams]);
+        return view('admin_users.teams_view', ['teams' => $teams]);
     }
 
     public function add_team(Request $request)
@@ -446,8 +411,6 @@ class DashboardController extends Controller
         $venue_id = null;
         $is_referee = \App\Referee::where('user_id', $user->id)->first();
         $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $validatedData = $request->validate([
             'name' => 'required|unique:teams|max:100'
@@ -521,16 +484,60 @@ class DashboardController extends Controller
         return redirect()->back();
     }
 
+    public function notification_view()
+    {
+        $user = \Auth::user();
+        $is_referee = \App\Referee::where('user_id', $user->id)->first();
+        $is_admin = \App\Admin::where('user_id', $user->id)->first();
+        $venue = null;
+        $admin_notifications = null;
+
+        if($is_admin)
+        {
+            $venue = \App\Venue::find($is_admin->venue_id);
+        } else if($is_referee) {
+            $venue = \App\Venue::find($is_referee->venue_id);
+        }
+        if($venue)
+        {
+            $admin_notifications = \App\TeamAdminRequest::where(['venue_id' => $venue->id, 'status' => 'pending'])->orderBy('created_at', 'DSC')->get();
+        }
+
+        return view('admin_users.notifications', ['admin_notifications' => $admin_notifications]);
+    }
+
+    public function notification_request(Request $request)
+    {
+        $user = \Auth::user();
+        $notification = \App\TeamAdminRequest::find($request->notification_id);
+        $notification_user = \App\User::find($notification->user_id);
+
+        if($request->response == 'accept')
+        {
+            $notification->update(['status' => 'complete']);
+            $new_club_admin = \App\TeamAdmin::create(['user_id' => $notification->user_id, 'team_id' => $notification->team_id, 'checked_by' => $user->id, 'active_status' => 'active']);
+            $new_player = \App\TeamPlayer::create(['user_id' => $notification->user_id, 'team_id' => $notification->team_id, 'checked_by' => $user->id, 'active_status' => 'active']);
+
+            \Session::flash("success", "You have accepted " . $notification_user->firstname . "'s request.");
+
+        } else if($request->response == 'decline') {
+            $notification->update(['status' => 'dismissed']);
+            \Session::flash("warning", "You have declined " . $notification_user->firstname . "'s request.");
+        }
+
+        return redirect()->back();
+    }
+
+    // End Admin And Referees
+
+    // Venue Admins
+
     public function referees_view()
     {
         $user = \Auth::user();
         $admin_user = \App\Admin::where('user_id', $user->id)->first();
         $referee_ids = [];
         $referees = \App\Referee::where('venue_id', $admin_user->venue_id)->get();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
         $venue_id = $admin_user->venue_id;
         
         foreach($referees as $referee)
@@ -540,24 +547,18 @@ class DashboardController extends Controller
 
         $referee_users = \App\User::whereIn('id', $referee_ids)->orderBy('firstname')->paginate(10);
 
-        return view('admin.referees_view', ['referee_users' => $referee_users, 'is_superuser' => $is_superuser,
-                                            'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach, 'venue_id' => $venue_id]);
+        return view('admin.referees_view', ['venue_id' => $venue_id, 'referee_users' => $referee_users]);
     }
 
     public function referee_edit($referee_user_id, $referee_user_name)
     {
         $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
         $referee_user = \App\User::where(['id' => $referee_user_id, 'firstname' => $referee_user_name])->first();
         $referee = \App\Referee::where('user_id', $referee_user_id)->first();
 
         if($referee_user)
         {
-            return view('admin.referee_edit', ['is_superuser' => $is_superuser, 'referee_user' => $referee_user, 'referee' => $referee,
-                                               'is_admin' => $is_admin, 'is_coach' => $is_coach, 'is_referee' => $is_referee]);
+            return view('admin.referee_edit', ['referee_user' => $referee_user, 'referee' => $referee]);
 
         } else {
             return abort(404);
@@ -670,29 +671,21 @@ class DashboardController extends Controller
 
     public function venues()
     {
-        $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $venues = \App\Venue::orderBy('name')->paginate(5);
 
-        return view('superuser.venues', ['venues' => $venues, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach ]);
+        return view('superuser.venues', ['venues' => $venues]);
     }
 
     public function venue_edit($venue_id, $venue_name)
     {
         $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
+        
         $venue = \App\Venue::where([['id','=', $venue_id], ['name', '=', $venue_name]])->first();
 
         if($venue)
         {
-            return view('superuser.venue_edit', ['venue' => $venue, 'is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach ]);
+            return view('superuser.venue_edit', ['venue' => $venue]);
         } else {
             return abort(404);
         }        
@@ -700,13 +693,7 @@ class DashboardController extends Controller
 
     public function venue_new()
     {
-        $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
-
-        return view('superuser.venue_new', ['is_superuser' => $is_superuser, 'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach]);
+        return view('superuser.venue_new');
 
     }
 
@@ -935,13 +922,8 @@ class DashboardController extends Controller
 
     public function coaches()
     {
-        $user = \Auth::user();
         $coaches_ids = [];
         $coaches = \App\Coach::all();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
         $soccer_schools = \App\Venue::where('venue_type', 'soccer_school')->get();
 
         foreach($coaches as $coach)
@@ -951,8 +933,7 @@ class DashboardController extends Controller
 
         $coach_users = \App\User::whereIn('id', $coaches_ids)->orderBy('firstname')->paginate(10);
 
-        return view('superuser.coaches', ['coach_users' => $coach_users, 'is_superuser' => $is_superuser,
-        'is_referee' => $is_referee, 'is_admin' => $is_admin, 'is_coach' => $is_coach, 'soccer_schools' => $soccer_schools]);
+        return view('superuser.coaches', ['soccer_schools' => $soccer_schools, 'coach_users' => $coach_users]);
 
     }
 
@@ -967,9 +948,33 @@ class DashboardController extends Controller
             'password' => 'required|confirmed'
         ]);
 
-        if($request->coach_id)
+        if($request->coach_user_id)
         {
-            \Session::flash('success', 'Updated');
+            if($request->password)
+            {
+                $validatedData = $request->validate([
+                    'firstname' => 'required|string',
+                    'surname' => 'required|string',
+                    'email' => ['required', 'email', Rule::unique('users')->ignore($user->id), 'max:255'],
+                    'gender' => 'required|string',
+                    'venue_id' => 'required',
+                    'password' => 'required|confirmed'
+                ]);
+                $updated_coach = \App\User::where('id', $user->id)->first()->update(['firstname' => $request->firstname, 'surname' => $request->surname, 'gender' => $request->gender, 'email' => $request->email, 'password' => \Hash::make($request->password)]);
+            } else {
+                $user = \App\User::find($request->coach_user_id);
+                $validatedData = $request->validate([
+                    'firstname' => 'required|string',
+                    'surname' => 'required|string',
+                    'email' => ['required', 'email', Rule::unique('users')->ignore($user->id), 'max:255'],
+                    'gender' => 'required|string',
+                ]);
+                
+                $updated_coach = \App\User::where('id', $user->id)->first()->update(['firstname' => $request->firstname, 'surname' => $request->surname, 'gender' => $request->gender, 'email' => $request->email]);
+            }
+            
+
+            \Session::flash('success', 'Coach '. $user->firstname .' has been updated');
 
         } else {
             $new_coach_user = \App\User::create([
@@ -991,8 +996,26 @@ class DashboardController extends Controller
                 \Session::flash('success', 'Coach '. $new_coach_user->firstname . ' created.');
 
             } else {
-                \Session::flash('error', 'There was an internal server error. Please contact Paperclip');
+                \Session::flash('error', 'There was an internal server error. Please contact Paperclip SA');
             }
+        }
+
+        return redirect()->back();
+    }
+
+    public function coach_delete(Request $request)
+    {
+        $coach_user = \App\User::find($request->coach_user_id);
+        $coach = \App\Coach::where('user_id', $request->coach_user_id)->first();
+
+        $coach_user_delete = $coach_user->delete();
+        $coach_delete = $coach->delete();
+
+        if($coach_delete and $coach_user_delete)
+        {
+            \Session::flash('success', $coach_user->firstname .' ' . $coach_user->surname .' has been removed.');
+        } else {
+            \Session::flash('error', 'There was an internal server error. Please contact Paperclip SA.');
         }
 
         return redirect()->back();
@@ -1015,31 +1038,151 @@ class DashboardController extends Controller
         return redirect()->back();
     }
 
+    public function admins()
+    {
+        $user = \Auth::user();
+        $admin_ids = [];
+        $admin = \App\Admin::all();
+        $indoor_soccer_venues = \App\Venue::where('venue_type', 'indoor_soccer')->get();
+
+        foreach($admin as $admin)
+        {
+            array_push($admin_ids, $admin->user_id);
+        }
+
+        $admin_users = \App\User::whereIn('id', $admin_ids)->orderBy('firstname')->paginate(10);
+
+        return view('superuser.admins', ['indoor_soccer_venues' => $indoor_soccer_venues, 'admin_users' => $admin_users]);
+    }
+
+    public function admin_edit($admin_user_id, $admin_user_name)
+    {
+        
+        $admin_user = \App\User::where(['id' => $admin_user_id, 'firstname' => $admin_user_name])->first();
+        $admin = \App\Admin::where('user_id', $admin_user_id)->first();
+
+        if($admin_user)
+        {
+            return view('superuser.admin_edit', ['admin_user' => $admin_user, 'admin' => $admin]);
+
+        } else {
+            return abort(404);
+        }
+    }
+
+    public function admin_save(Request $request)
+    {
+
+        if($request->admin_user_id)
+        {
+            $user = \App\User::find($request->admin_user_id);
+
+            if($request->password)
+            {
+                $validatedData = $request->validate([
+                    'firstname' => 'required|string',
+                    'surname' => 'required|string',
+                    'email' => ['required', 'email', Rule::unique('users')->ignore($user->id), 'max:255'],
+                    'gender' => 'required|string',
+                    'venue_id' => 'required',
+                    'password' => 'required|confirmed'
+                ]);
+                $updated_admin = \App\User::where('id', $user->id)->first()->update(['firstname' => $request->firstname, 'surname' => $request->surname, 'gender' => $request->gender, 'email' => $request->email, 'password' => \Hash::make($request->password)]);
+            } else {
+                $user = \App\User::find($request->admin_user_id);
+                $validatedData = $request->validate([
+                    'firstname' => 'required|string',
+                    'surname' => 'required|string',
+                    'email' => ['required', 'email', Rule::unique('users')->ignore($user->id), 'max:255'],
+                    'gender' => 'required|string',
+                ]);
+                
+                $updated_admin = \App\User::where('id', $user->id)->first()->update(['firstname' => $request->firstname, 'surname' => $request->surname, 'gender' => $request->gender, 'email' => $request->email]);
+            }
+            
+
+            \Session::flash('success', 'Admin '. $user->firstname .' has been updated');
+
+        } else {
+            $new_admin_user = \App\User::create([
+                'firstname' => $request->firstname,
+                'surname' => $request->surname,
+                'email' => $request->email,
+                'gender' => $request->gender,
+                'password' => \Hash::make($request->password),
+                'last_login' => time()
+            ]);
+
+            if($new_admin_user)
+            {
+                $new_admin = \App\Admin::create([
+                    'user_id' => $new_admin_user->id,
+                    'active_status' => 'active',
+                    'venue_id' => $request->venue_id,
+                    'last_login' => time()
+                ]);
+                \Session::flash('success', 'Admin '. $new_admin_user->firstname . ' created.');
+
+            } else {
+                \Session::flash('error', 'There was an internal server error. Please contact Paperclip SA');
+            }
+        }
+
+        return redirect()->to('/user-profile/superuser/admins');
+    }
+
+    public function admin_delete(Request $request)
+    {
+        $admin_user = \App\User::find($request->admin_user_id);
+        $admin = \App\Admin::where('user_id', $request->admin_user_id)->first();
+
+        $admin_user_delete = $admin_user->delete();
+        $admin_delete = $admin->delete();
+
+        if($admin_delete and $admin_user_delete)
+        {
+            \Session::flash('success', $admin_user->firstname .' ' . $admin_user->surname .' has been removed.');
+        } else {
+            \Session::flash('error', 'There was an internal server error. Please contact Paperclip SA.');
+        }
+
+        return redirect()->back();
+    }
+
+    public function set_active_admin(Request $request)
+    {
+        $admin = \App\admin::where('user_id', $request->admin_id)->first();
+        $admin_user = \App\User::find($admin->user_id);
+
+        if($admin->active_status == 'suspended' or $admin->active_status == 'banned')
+        {
+            $admin->update(['active_status' => 'active']);
+            $admin_user->update(['active_status' => 'active']);
+        } else {
+            $admin->update(['active_status' => 'suspended']);
+            $admin_user->update(['active_status' => 'suspended']);
+        }
+
+        return redirect()->back();
+    }
+
+    // Super Dashboard end
+
     // Coaches Dashboard
 
     public function age_groups_view()
     {
         $user = \Auth::user();
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
-        $is_coach = \App\Coach::where('user_id', $user->id)->first();
-
         $venue = \App\Venue::find($is_coach->venue_id);
-
         $age_groups = \App\SoccerSchoolsAgeGroup::where('venue_id', $is_coach->venue_id)->orderBy('name')->paginate(15);
 
-        return view('coach.age_groups', ['is_superuser' => $is_superuser,'is_referee' => $is_referee, 'is_admin' => $is_admin,
-                                               'is_coach' => $is_coach, 'age_groups' => $age_groups]);
+        return view('coach.age_groups', ['age_groups' => $age_groups]);
     }
 
     public function add_age_group(Request $request) 
     {
         $user = \Auth::user();
         $venue_id = null;
-        $is_referee = \App\Referee::where('user_id', $user->id)->first();
-        $is_admin = \App\Admin::where('user_id', $user->id)->first();
-        $is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
         $is_coach = \App\Coach::where('user_id', $user->id)->first();
 
         $validatedData = $request->validate([
@@ -1109,5 +1252,343 @@ class DashboardController extends Controller
 
         return redirect()->back();
     }
+
+    // End Coaches
+
+    // Player Club views
+
+    public function club_index()
+    {
+        $user = \Auth::user();
+        $user_clubs_arr = [];
+        $user_is_club_admin = \App\TeamAdmin::where('user_id', $user->id)->first();
+        $user_is_club_player = \App\TeamPlayer::where('user_id', $user->id)->first();
+        
+        if($user_is_club_admin)
+        {
+            $user_club_ids = \App\TeamAdmin::where('user_id', $user_is_club_admin->user_id)->get();
+
+        } else if($user_is_club_player) {
+            $user_club_ids = \App\TeamPlayer::where('user_id', $user_is_club_player->user_id)->get();
+
+        } else {
+            $user_club_ids = [0];
+        }
+
+        foreach($user_club_ids as $user_club_id)
+        {
+            if($user_club_id)
+            {
+                array_push($user_clubs_arr, $user_club_id->team_id);
+            }
+        }
+
+        $clubs = \App\Team::whereIn('id', $user_clubs_arr)->get();
+
+        return view('clubs.my_clubs', ['clubs' => $clubs]);
+    }
+
+    public function club_view($club_id, $club_name)
+    {
+        $user = \Auth::user();
+        $is_admin = \App\TeamAdmin::where(['team_id' => $club_id, 'user_id' => $user->id])->first();
+        $club = \App\Team::find($club_id);
+        $venue = \App\Venue::find($club->venue_id);
+        $has_team_profile = \App\TeamProfile::where('team_id', $club->id)->first();
+        $team_players = \App\TeamPlayer::where('team_id', $club->id)->get();
+        $stream_ids = [];
+        $club_fixtures  = \App\Fixture::where('team_a', $club->name)->orWhere('team_b', $club->name)->get();
+
+        foreach($club_fixtures as $club_fixture)
+        {
+            array_push($stream_ids, $club_fixture->stream_id);
+        }
+
+        $club_vods = \App\Stream::whereIn('id', $stream_ids)->orderBy('created_at', 'DSC')->paginate(15);
+
+        return view('clubs.club_view', ['club' => $club, 'venue' => $venue, 'has_team_profile' => $has_team_profile,
+                                        'team_players' => $team_players, 'club_vods' => $club_vods, 'is_admin' => $is_admin]);
+    }
+
+    // End Player Club views
+
+    // Start Club manager views
+
+    public function team_admin_notifications()
+    {
+        $user = \Auth::user();
+        $is_team_admins = \App\TeamAdmin::where('user_id', $user->id)->get();
+        
+        $team_ids = [];
+        $notifications = null;
+
+        foreach($is_team_admins as $team_admin)
+        {
+            array_push($team_ids, $team_admin->team_id);
+        }
+
+        $notifications = \App\TeamPlayerRequest::whereIn('team_id', $team_ids)->where(['status' => 'pending'])->orderBy('created_at', 'DSC')->get();
+
+        return view('club_admins.notifications', ['notifications' => $notifications]);
+    }
+
+    public function player_notification_request(Request $request)
+    {
+        $user = \Auth::user();
+        $notification = \App\TeamPlayerRequest::find($request->notification_id);
+        $notification_user = \App\User::find($notification->user_id);
+
+        if($request->response == 'accept')
+        {
+            $notification->update(['status' => 'complete']);
+            $new_player = \App\TeamPlayer::create(['user_id' => $notification->user_id, 'team_id' => $notification->team_id, 'checked_by' => $user->id, 'active_status' => 'active']);
+
+            \Session::flash("success", "You have accepted " . $notification_user->firstname . "'s request.");
+
+        } else if($request->response == 'decline') {
+            $notification->update(['status' => 'dismissed']);
+            \Session::flash("warning", "You have declined " . $notification_user->firstname . "'s request.");
+        }
+
+        return redirect()->back();
+    }
+
+    public function club_edit($club_id, $club_name)
+    {
+        $user = \Auth::user();
+        $club = \App\Team::find($club_id);
+        $venue = \App\Venue::find($club->venue_id);
+        $has_team_profile = \App\TeamProfile::where('team_id', $club->id)->first();
+        $team_profile = \App\TeamProfile::where('team_id', $club->id)->first();
+        $team_ids = [];
+        $admin_to_teams = \App\TeamAdmin::where('user_id', $user->id)->get();
+
+        foreach($admin_to_teams as $admin_to_team)
+        {
+            array_push($team_ids, $admin_to_team->team_id);
+        }
+
+        if(\App\TeamAdmin::whereIn('team_id', $team_ids)->where('user_id', $user->id)->count())
+        {
+
+            return view('club_admins.edit_team', ['club' => $club, 'team_profile' => $team_profile, 'venue' => $venue, 'has_team_profile' => $has_team_profile]);
+        } else {
+
+            return response('Unauthorized.', 401);
+        }
+
+    }
+
+    public function club_player_edit($club_id, $club_name)
+    {
+        $user = \Auth::user();
+        $club = \App\Team::find($club_id);
+        $venue = \App\Venue::find($club->venue_id);
+        $is_admin = \App\TeamAdmin::where(['team_id' => $club_id, 'user_id' => $user->id])->first();
+        $team_players = \App\TeamPlayer::where('team_id', $club->id)->get();
+        $has_team_profile = \App\TeamProfile::where('team_id', $club->id)->first();
+        $team_profile = \App\TeamProfile::where('team_id', $club->id)->first();
+        $team_ids = [];
+        $admin_to_teams = \App\TeamAdmin::where('user_id', $user->id)->get();
+
+        foreach($admin_to_teams as $admin_to_team)
+        {
+            array_push($team_ids, $admin_to_team->team_id);
+        }
+
+        if(\App\TeamAdmin::whereIn('team_id', $team_ids)->where('user_id', $user->id)->count())
+        {
+
+            return view('club_admins.edit_players', ['club' => $club, 'team_profile' => $team_profile, 'venue' => $venue,
+                                                     'has_team_profile' => $has_team_profile, 'is_admin' => $is_admin, 'team_players' => $team_players]);
+        } else {
+
+            return response('Unauthorized.', 401);
+        }
+
+    }
+
+    public function remove_player(Request $request)
+    {
+        $user = \Auth::user();
+        $team_ids = [];
+        $admin_to_teams = \App\TeamAdmin::where('user_id', $user->id)->get();
+
+        foreach($admin_to_teams as $admin_to_team)
+        {
+            array_push($team_ids, $admin_to_team->team_id);
+        }
+
+        if(\App\TeamAdmin::whereIn('team_id', $team_ids)->where('user_id', $user->id)->count())
+        {
+            $team_player = \App\TeamPlayer::find($request->player_id);
+            $team_admin = \App\TeamAdmin::where(['user_id' => $team_player->user_id, 'team_id' => $team_player->team_id])->first();
+            $club = \App\Team::find($team_player->team_id);
+            $player_user = \App\User::find($team_player->user_id);
+            $team_player_request = \App\TeamPlayerRequest::where(['user_id' => $team_player->user_id, 'team_id' => $team_player->team_id])->first();
+            $team_admin_request = \App\TeamAdminRequest::where(['user_id' => $team_player->user_id, 'team_id' => $team_player->team_id])->first();
+            
+            if($team_player_request)
+            {
+                $team_player_request->delete();
+            }
+
+            if($team_admin_request)
+            {
+                $team_admin_request->delete();
+            }
+
+            if($team_admin)
+            {
+
+                $team_admin->delete();
+                $team_player->delete();
+
+                \Session::flash('success', 'You have removed yourself from the club ' . $club->name);
+                return redirect()->to('/user-profile');
+
+            } else if($team_player) {
+                $team_player->delete();
+
+                \Session::flash('success', $player_user->firstname . ' ' . $player_user->surname . ' has been removed from the club.');
+                return redirect()->back();
+            } else {
+
+                \Session::flash('success', 'player has already been removed from the club.');
+                return redirect()->to('user-profile');
+            }
+            
+        } else {
+
+            return response('Unauthorized.', 401);
+        }
+
+    }
+
+    public function add_player(Request $request)
+    {
+        $user = \Auth::user();
+        $team_ids = [];
+        $admin_to_teams = \App\TeamAdmin::where('user_id', $user->id)->get();
+
+        $validatedData = $request->validate([
+            'email' => 'required|email|exists:users',
+            'club_id' => 'required',
+        ]);
+
+        foreach($admin_to_teams as $admin_to_team)
+        {
+            array_push($team_ids, $admin_to_team->team_id);
+        }
+
+        if(\App\TeamAdmin::whereIn('team_id', $team_ids)->where('user_id', $user->id)->count())
+        {
+            $player_is_user = \App\User::where('email', $request->email)->first();
+
+            if($player_is_user)
+            {
+                $already_player = \App\TeamPlayer::where(['user_id' => $player_is_user->id, 'team_id' => $request->club_id])->first();
+
+                if($already_player)
+                {
+
+                    \Session::flash('error', $player_is_user->email . ' has already been registered with the club.');
+                } else {
+
+                    $new_player = \App\TeamPlayer::create(['user_id' => $player_is_user->id, 'team_id' => $request->club_id, 'active_status' => 'active']);
+                    if($new_player)
+                    {
+                        \Session::flash('success', $player_is_user->email . ' has been registered with the club.');
+
+                    } else {
+                        \Session::flash('error', 'An internal server error has occured please contact Paperclip SA.');
+
+                    }
+                }
+            }
+
+            return redirect()->back();
+        } else {
+
+            return response('Unauthorized.', 401);
+        }
+    }
+
+    public function player_status(Request $request)
+    {
+        $user = \Auth::user();
+        $team_ids = [];
+        $admin_to_teams = \App\TeamAdmin::where('user_id', $user->id)->get();
+
+        foreach($admin_to_teams as $admin_to_team)
+        {
+            array_push($team_ids, $admin_to_team->team_id);
+        }
+
+        if(\App\TeamAdmin::whereIn('team_id', $team_ids)->where('user_id', $user->id)->count())
+        {
+            $team_player = \App\TeamPlayer::find($request->player_id);
+            $player_user = \App\User::find($team_player->user_id);
+
+            if($team_player->active_status == 'active')
+            {
+                $team_player->update(['active_status' => 'suspended']);
+                \Session::flash('warning', $player_user->firstname . ' ' . $player_user->surname . ' status has been set to suspended');
+            } else {
+                $team_player->update(['active_status' => 'active']);
+                \Session::flash('success', $player_user->firstname . ' ' . $player_user->surname . ' status has been set to active');
+
+            }
+
+            return redirect()->back();
+        } else {
+
+            return response('Unauthorized.', 401);
+        }
+
+    }
+
+    public function club_save(Request $request)
+    {
+        $user = \Auth::user();
+        $team = \App\Team::find($request->team_id);
+        $team_profile = \App\TeamProfile::where('team_id', $team->id)->first();
+        $team_ids = [];
+        $admin_to_teams = \App\TeamAdmin::where('user_id', $user->id)->get();
+
+        foreach($admin_to_teams as $admin_to_team)
+        {
+            array_push($team_ids, $admin_to_team->team_id);
+        }
+
+        if(\App\TeamAdmin::whereIn('team_id', $team_ids)->where('user_id', $user->id)->count())
+        {
+            if($team_profile)
+            {
+                $logo_path = $request->file('logo_img')->store('/clubs/logos', 'public');
+                $img_name = explode('/', $logo_path)[2];
+
+                if($team_profile->logo)
+                {
+                    \Storage::disk('public')->delete('clubs/logos/'. $team_profile->logo);
+                }
+
+                $team_profile->update(['description' => $request->club_bio, 'logo' => $img_name]);
+            } else {
+                $logo_path = $request->file('logo_img')->store('/clubs/logos', 'public');
+                $img_name = explode('/', $logo_path)[2];
+                $new_team_profile = \App\TeamProfile::create(['team_id' => $team->id, 'description' => $request->club_bio, 'logo' => $img_name]);
+            }
+
+        } else {
+            return abort(401);
+        }
+
+        return redirect()->to('/user-profile/my-soccer-clubs');
+
+    }
+
+
+    // End Club manager views
 
 }

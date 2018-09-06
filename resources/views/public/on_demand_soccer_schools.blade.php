@@ -59,7 +59,7 @@
             @if($vod->stream_type == "vod")
             <div class="col-xs-12 col-md-3 vod-item">
                 <a href="/on-demand/soccer-schools/{{$vod->id}}/{{$vod->name}}/" class="js-item">
-                    <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
+                    <img src="{{ asset('images/vod_1.png')}}" height="auto" width="100%" />
                     <i class="far fa-play-circle play-icon" style="display:none;"></i>
                 </a>
                 <p style="color: #ffffff; margin: 5px;">{{str_replace("_", " ", $vod->name)}}</p>

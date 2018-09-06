@@ -20,6 +20,7 @@
     "vue": "^2.5.7"
   },
   "dependencies": {
+    "accordion": "^3.0.1",
     "videojs-contrib-hls": "^5.14.1",
     "videojs-marquee-overlay": "^2.0.1",
     "videojs-overlay": "^2.0.0",

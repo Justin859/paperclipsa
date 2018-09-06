@@ -22,25 +22,21 @@ class VerifyAccountController extends Controller
                 $update_user_verifytoken = \App\User::find($user->id)->update(['verifyToken' => bin2hex(random_bytes(13))]);
             } 
 
-            $user = \Auth::user();
+            $user = \App\User::find($user->id);
 
-            $data = ['message' => 'Test Message', 'user_id' => $user->id, 'verifyToken' => $user->verifyToken, 'email' => $user->email, 'firstname' => $user->firstname];
+            $data = ['message' => 'Test Message', 'user_id' => $user->id, 'name' => $user->firstname, 'email' => $user->email, 'verifyToken' => $user->verifyToken];
 
             if($user_verified->verified)
             {
                 \Session::flash('error', 'Your email address has already been verified.');
                 return redirect()->back();
             } else {
-
-                // \Mail::to($user->email)->send(new VerifyEmail($data));
-
                 $beautymail = app()->make(\Snowfire\Beautymail\Beautymail::class);
                 $beautymail->send('emails.verify_email', $data, function($message) use($data)
                 {
-        
                     $message
                         ->from('noreply@paperclipsa.co.za')
-                        ->to($data['email'], $data['firstname'])
+                        ->to($data['email'], $data['name'])
                         ->subject('Paperclip SA Email Verification');
                 });
 
@@ -49,21 +45,19 @@ class VerifyAccountController extends Controller
             }
             
         } else {
+
             $update_user_verifytoken = \App\User::find($user->id)->update(['verifyToken' => bin2hex(random_bytes(13))]);
+            $updated_user = \App\User::find($user->id);
             $new_verified_user = \App\VerifiedUser::create(['user_id' => $user->id, 'email' => $user->email, 'verified' => 0]);
-            $data = ['message' => 'Test Message', 'user_id' => $user->id, 'verifyToken' => $update_user_verifytoken->verifyToken, 'email' => $user->email, 'firstname' => $user->firstname];
-
-            // \Mail::to($user->email)->send(new VerifyEmail($data));
-
+            $data = ['message' => 'Test Message', 'user_id' => $user->id, 'name' => $user->firstname, 'email' => $user->email, 'verifyToken' => $updated_user->verifyToken];
             $beautymail = app()->make(\Snowfire\Beautymail\Beautymail::class);
-                $beautymail->send('emails.verify_email', $data, function($message) use($data)
-                {
-        
-                    $message
-                        ->from('noreply@paperclipsa.co.za')
-                        ->to($data['email'], $data['firstname'])
-                        ->subject('Paperclip SA Email Verification');
-                });
+            $beautymail->send('emails.verify_email', $data, function($message) use($data)
+            {
+                $message
+                    ->from('noreply@paperclipsa.co.za')
+                    ->to($data['email'], $data['name'])
+                    ->subject('Paperclip SA Email Verification');
+            });
 
             \Session::flash('success', 'A verification email has been sent to: '.$user->email);
             return redirect()->back();
@@ -92,4 +86,5 @@ class VerifyAccountController extends Controller
         }
 
     }
+
 }

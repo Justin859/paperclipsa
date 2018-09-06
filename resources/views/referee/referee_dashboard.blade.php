@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
 <style>
     .fa-plug, .fa-dot-circle, .fa-eye, .fa-edit {
         font-size: 24px;
@@ -234,7 +235,7 @@
                     <div class="form-group row">
                         <label for="team_a" class="col-2 col-form-label">Team A</label>
                         <div class="col-10">
-                            <select class="form-control{{ $errors->has('team_a') ? ' is-invalid' : '' }}" autocomplete="off" name="team_a" id="target_a">
+                            <select class="selectpicker_a form-control{{ $errors->has('team_a') ? ' is-invalid' : '' }}" data-live-search="true" autocomplete="off" name="team_a" id="target_a">
                             @if(old('team_a'))
                             <option disabled value=""> -- Select First Team -- </option>
                             @else
@@ -258,7 +259,7 @@
                     <div class="form-group row">
                         <label for="team_b" class="col-2 col-form-label">Team B</label>
                         <div class="col-10">
-                        <select class="form-control{{ $errors->has('team_b') ? ' is-invalid' : '' }}" autocomplete="off" name="team_b" id="target_b">
+                        <select class="selectpicker_b form-control{{ $errors->has('team_b') ? ' is-invalid' : '' }}" data-live-search="true" autocomplete="off" name="team_b" id="target_b">
                         @if(old('team_b'))
                         <option disabled value=""> -- Select Second Team -- </option>
                         @else
@@ -334,20 +335,32 @@
                 myOpt.push($(this).val());
             });
             $("select").each(function () {
-                $(this).find("option").prop('hidden', false);
+                $(this).find("option").prop('disabled', false);
                 var sel = $(this);
                 $.each(myOpt, function(key, value) {
                     if((value != "") && (value != sel.val())) {
-                        sel.find("option").filter('[value="' + value +'"]').prop('hidden', true);
+                        sel.find("option").filter('[value="' + value +'"]').prop('disabled', true);
                     }
                 });
             });
     });
     </script>
 @endif
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
 <script type="text/javascript">
-
     $( document ).ready(function() {
+        $.fn.selectpicker.Constructor.BootstrapVersion = '4';
+
+        $('.selectpicker_a').selectpicker({
+            style: 'btn-info',
+            size: 4
+        });
+
+        $('.selectpicker_b').selectpicker({
+            style: 'btn-danger',
+            size: 4
+        });
+
         $('#areYouSure').on('shown.bs.modal', function () {
         $('#newStream').trigger('focus');
         });
@@ -406,11 +419,11 @@
                 myOpt.push($(this).val());
             });
             $("select").each(function () {
-                $(this).find("option").prop('hidden', false);
+                $(this).find("option").prop('disabled', false);
                 var sel = $(this);
                 $.each(myOpt, function(key, value) {
                     if((value != "") && (value != sel.val())) {
-                        sel.find("option").filter('[value="' + value +'"]').prop('hidden', true);
+                        sel.find("option").filter('[value="' + value +'"]').prop('disabled', true);
                     }
                 });
             });

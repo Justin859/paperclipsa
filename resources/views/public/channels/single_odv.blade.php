@@ -58,15 +58,13 @@
     </div>
     <hr />
     @if($venue->venue_type == 'indoor_soccer')
-
-    <div class="row" style="background-image: url(''); background-size: contain;">
-        <img src="{{asset('/storage/adverts/images/239SqTl5NMJBWQ3RdeHXmcNnOMTZf8oaVQ26Q1bJ.jpeg')}}" />
-    </div>
-
+        <a href="http://new.supabets.co.za/Sport/Default.aspx?promocode=actionreplay">
+            <img src="{{asset('/storage/adverts/images/239SqTl5NMJBWQ3RdeHXmcNnOMTZf8oaVQ26Q1bJ.jpeg')}}" class="img-fluid mb-4" />
+        </a>
     @elseif($venue->venue_type == 'squash')
 
     <div class="row" style="background-image: url(''); background-size: contain;">
-        <img src="{{asset('/storage/adverts/images/Artboard_2.png')}}" />
+        <img src="{{asset('/storage/adverts/images/Artboard_2.png')}}" class="img-fluid" />
     </div>
 
     @endif
@@ -75,6 +73,7 @@
         <div class="btn-group" role="group" aria-label="Basic example">
             <a href="/channel/{{$venue->id}}/{{$venue->name}}" class="btn btn-outline-danger">Channel</a>
             <a href="/channel/{{$venue->id}}/{{$venue->name}}/on-demand" class="btn btn-danger">On-Demand</a>
+            <a href="/channel/{{$venue->id}}/{{$venue->name}}/clubs" class="btn btn-outline-danger">Clubs</a>
         </div>
     </div>
     <hr />
@@ -86,7 +85,7 @@
             <div class="col-xs-12 col-md-3 vod-item">
                 @if($venue->venue_type != 'squash')
                 <a href="/on-demand/indoor-soccer/{{$vod->id}}/{{$vod->name}}/" class="js-item">
-                    <img src="{{ asset('images/vod1.png')}}" height="auto" width="100%" />
+                    <img src="{{ asset('images/vod_1.png')}}" height="auto" width="100%" />
                     <i class="far fa-play-circle play-icon" style="display:none;"></i>
                 </a>
                 @else
