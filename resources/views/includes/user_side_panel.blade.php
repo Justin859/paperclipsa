@@ -117,10 +117,39 @@
                 <a href="/user-profile/coach/age-groups" class="main-side-bar-item"><li class="list-group-item">Age Groups &nbsp;&nbsp;<i class="fas fa-users"></i></li></a> 
                 @endif
             @endif
-            @if($_SERVER['REQUEST_URI'] == '/user-profile/edit')
-            <a href="/user-profile/edit" class="main-side-bar-item"><li class="list-group-item active-sidebar">Edit Profile &nbsp;&nbsp;<i class="far fa-edit"></i></li></a>
-            @else
-            <a href="/user-profile/edit" class="main-side-bar-item"><li class="list-group-item">Edit Profile &nbsp;&nbsp;<i class="far fa-edit"></i></li></a>
+            @if(!$is_admin and !$is_referee and !$is_coach)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/edit')
+                <a href="/user-profile/edit" class="main-side-bar-item"><li class="list-group-item active-sidebar">Edit Profile &nbsp;&nbsp;<i class="far fa-edit"></i></li></a>
+                @else
+                <a href="/user-profile/edit" class="main-side-bar-item"><li class="list-group-item">Edit Profile &nbsp;&nbsp;<i class="far fa-edit"></i></li></a>
+                @endif
+            @endif
+            @if($is_admin)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/admin/sell-credits')
+                <a href="/user-profile/admin/sell-credits" class="main-side-bar-item"><li class="list-group-item active-sidebar">Sell Credits &nbsp;&nbsp;<i class="fas fa-file-invoice-dollar"></i></li></a>
+                @else
+                <a href="/user-profile/admin/sell-credits" class="main-side-bar-item"><li class="list-group-item">Sell Credits &nbsp;&nbsp;<i class="fas fa-file-invoice-dollar"></i></li></a>
+                @endif
+            @elseif($is_superuser)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/admin/sell-credits')
+                <a href="/user-profile/admin/sell-credits" class="main-side-bar-item"><li class="list-group-item active-sidebar">Give Credits &nbsp;&nbsp;<i class="fas fa-file-invoice-dollar"></i></li></a>
+                @else
+                <a href="/user-profile/admin/sell-credits" class="main-side-bar-item"><li class="list-group-item">Give Credits &nbsp;&nbsp;<i class="fas fa-file-invoice-dollar"></i></li></a>
+                @endif
+            @endif
+            @if($is_superuser)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/superuser/find-stream')
+                <a href="/user-profile/superuser/find-stream" class="main-side-bar-item"><li class="list-group-item active-sidebar">Remove Stream &nbsp;&nbsp;<i class="fab fa-searchengin"></i></li></a>
+                @else
+                <a href="/user-profile/superuser/find-stream" class="main-side-bar-item"><li class="list-group-item">Remove Stream &nbsp;&nbsp;<i class="fab fa-searchengin"></i></li></a>
+                @endif
+            @endif
+            @if($is_admin)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/admin/balance-statistics')
+                <a href="/user-profile/admin/balance-statistics" class="main-side-bar-item"><li class="list-group-item active-sidebar">Balance Statistics &nbsp;&nbsp;<i class="fas fa-calculator"></i></li></a>
+                @else
+                <a href="/user-profile/admin/balance-statistics" class="main-side-bar-item"><li class="list-group-item">Balance Statistics &nbsp;&nbsp;<i class="fas fa-calculator"></i></li></a>
+                @endif
             @endif
             @if(!$is_admin and !$is_referee)
                 @if($_SERVER['REQUEST_URI'] == '/user-profile/my-soccer-clubs')
@@ -164,21 +193,23 @@
                 <a href="/user-profile/superuser/coaches" class="main-side-bar-item"><li class="list-group-item">Venue Coaches &nbsp;&nbsp;<i class="fas fa-chalkboard-teacher"></i></li></a>
                 @endif
             @endif
-            @if($_SERVER['REQUEST_URI'] == '/user-profile/buy-credit')
-            <a href="/user-profile/buy-credit" class="main-side-bar-item" ><li class="list-group-item active-sidebar">Buy Credits &nbsp;&nbsp;<i class="fas fa-credit-card"></i></li></a>
-            @else
-            <a href="/user-profile/buy-credit" class="main-side-bar-item" ><li class="list-group-item">Buy Credits &nbsp;&nbsp;<i class="fas fa-credit-card"></i></li></a>
-            @endif
-            @if($_SERVER['REQUEST_URI'] == '/user-profile/submit-voucher')
-            <a href="/user-profile/submit-voucher" class="main-side-bar-item"><li class="list-group-item active-sidebar">Redeem Voucher &nbsp;&nbsp;<i class="fas fa-ticket-alt"></i></li></a>
-            @else
-            <a href="/user-profile/submit-voucher" class="main-side-bar-item"><li class="list-group-item">Redeem Voucher &nbsp;&nbsp;<i class="fas fa-ticket-alt"></i></li></a>
-            @endif
-            @if($_SERVER['REQUEST_URI'] == '/subscription/checkout')
-            <a href="/subscription/checkout" class="main-side-bar-item"><li class="list-group-item active-sidebar">Subscribe&nbsp;&nbsp;<i class="fas fa-credit-card"></i>&nbsp;&nbsp;<i class="fas fa-arrows-alt-h"></i> &nbsp;&nbsp;<i class="fas fa-id-card"></i></li></a>
-            @else
-            <a href="/subscription/checkout" class="main-side-bar-item"><li class="list-group-item">Subscribe&nbsp;&nbsp;<i class="fas fa-credit-card"></i>&nbsp;&nbsp;<i class="fas fa-arrows-alt-h"></i> &nbsp;&nbsp;<i class="fas fa-id-card"></i></li></a>
-            @endif                        
+            @if(!$is_admin and !$is_coach and !$is_admin and !$is_referee)
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/buy-credit')
+                <a href="/user-profile/buy-credit" class="main-side-bar-item" ><li class="list-group-item active-sidebar">Buy Credits &nbsp;&nbsp;<i class="fas fa-credit-card"></i></li></a>
+                @else
+                <a href="/user-profile/buy-credit" class="main-side-bar-item" ><li class="list-group-item">Buy Credits &nbsp;&nbsp;<i class="fas fa-credit-card"></i></li></a>
+                @endif
+                @if($_SERVER['REQUEST_URI'] == '/user-profile/submit-voucher')
+                <a href="/user-profile/submit-voucher" class="main-side-bar-item"><li class="list-group-item active-sidebar">Redeem Voucher &nbsp;&nbsp;<i class="fas fa-ticket-alt"></i></li></a>
+                @else
+                <a href="/user-profile/submit-voucher" class="main-side-bar-item"><li class="list-group-item">Redeem Voucher &nbsp;&nbsp;<i class="fas fa-ticket-alt"></i></li></a>
+                @endif
+                @if($_SERVER['REQUEST_URI'] == '/subscription/checkout')
+                <a href="/subscription/checkout" class="main-side-bar-item"><li class="list-group-item active-sidebar">Subscribe&nbsp;&nbsp;<i class="fas fa-credit-card"></i>&nbsp;&nbsp;<i class="fas fa-arrows-alt-h"></i> &nbsp;&nbsp;<i class="fas fa-id-card"></i></li></a>
+                @else
+                <a href="/subscription/checkout" class="main-side-bar-item"><li class="list-group-item">Subscribe&nbsp;&nbsp;<i class="fas fa-credit-card"></i>&nbsp;&nbsp;<i class="fas fa-arrows-alt-h"></i> &nbsp;&nbsp;<i class="fas fa-id-card"></i></li></a>
+                @endif       
+            @endif                 
         </ul>
     </div>
 </div>

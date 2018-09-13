@@ -17,6 +17,7 @@ use \App\Http\Middleware\CheckAdmin;
 use \App\Http\Middleware\CheckAdminUser;
 use \App\Http\Middleware\CheckCoach;
 use \App\Http\Middleware\CheckClubAdmin;
+use \App\Http\Middleware\CheckAdminSuperuser;
 
 Route::get('/', function () {
     return view('welcome');
@@ -227,12 +228,14 @@ Route::post('/user-profile/admin/referee/delete', 'DashboardController@delete_re
 Route::post('/user-profile/admin/referee/set-active', 'DashboardController@set_active_referee')->middleware(CheckAdmin::class)->middleware('auth');
 Route::post('/user-profile/admin/referee/new', 'DashboardController@referee_new')->middleware(CheckAdmin::class)->middleware('auth');
 Route::post('/user-profile/admin/notifications/request', 'DashboardController@notification_request')->middleware(CheckAdminUser::class)->middleware('auth');
+Route::post('/user-profile/admin/sell-credits/request', 'DashboardController@add_credits_request')->middleware(CheckAdminSuperuser::class)->middleware('auth');
 
 Route::get('/user-profile/admin/teams', 'DashboardController@teams_view')->middleware(CheckAdminUser::class)->middleware('auth');
 Route::get('/user-profile/admin/referees', 'DashboardController@referees_view')->middleware(CheckAdmin::class)->middleware('auth');
 Route::get('/user-profile/admin/referees/edit/{referee_user_id}/{referee_user_name}', 'DashboardController@referee_edit')->middleware(CheckAdmin::class)->middleware('auth');
 Route::get('/user-profile/admin/notifications', 'DashboardController@notification_view')->middleware(CheckAdminUser::class)->middleware('auth');
-
+Route::get('/user-profile/admin/sell-credits', 'DashboardController@add_credits')->middleware(CheckAdminSuperuser::class)->middleware('auth');
+Route::get('/user-profile/admin/balance-statistics', 'DashboardController@balance_statistics')->middleware(CheckAdmin::class)->middleware('auth');
 // Club managers
 
 Route::get('/user-profile/club-manager')->middleware(CheckClubAdmin::class)->middleware('auth');
@@ -242,6 +245,7 @@ Route::get('/user-profile/club-manager')->middleware(CheckClubAdmin::class)->mid
 Route::post('/user-profile/superuser/venue/set-active', 'DashboardController@set_active_venue')->middleware(CheckSuperUser::class)->middleware('auth');
 Route::post('/user-profile/superuser/venue/save', 'DashboardController@venue_save')->middleware(CheckSuperUser::class)->middleware('auth');
 Route::post('/user-profile/superuser/venue/delete', 'DashboardController@venue_delete')->middleware(CheckSuperUser::class)->middleware('auth');
+Route::post('/user-profile/superuser/confirm/venue-paid', 'DashboardController@venue_paid')->middleware(CheckSuperuser::class)->middleware('auth');
 
 Route::get('/user-profile/superuser/venues', 'DashboardController@venues')->middleware(CheckSuperUser::class)->middleware('auth');
 Route::get('/user-profile/superuser/venue/edit/{venue_id}/{venue_name}', 'DashboardController@venue_edit')->middleware(CheckSuperUser::class)->middleware('auth');
@@ -257,8 +261,13 @@ Route::post('/user-profile/superuser/coach/save', 'DashboardController@coach_sav
 Route::post('/user-profile/superuser/coach/delete', 'DashboardController@coach_delete')->middleware(CheckSuperuser::class)->middleware('auth');
 Route::post('/user-profile/superuser/coach/set-active', 'DashboardController@set_active_coach')->middleware(CheckSuperuser::class)->middleware('auth');
 
+Route::get('/user-profile/superuser/venue/analytics/{venue_id}/{venue_name}', 'DashboardController@venue_anylitics')->middleware(CheckSuperUser::class)->middleware('auth');
+
 Route::get('/user-profile/superuser/coaches', 'DashboardController@coaches')->middleware(CheckSuperUser::class)->middleware('auth');
 Route::get('/user-profile/superuser/coach/edit/{coach_user_id}/{coach_user_name}', 'DashboardController@coach_edit')->middleware(CheckSuperuser::class)->middleware('auth');
+
+Route::post('/user-profile/superuser/delete-stream/request', 'DashboardController@delete_stream')->middleware(CheckSuperuser::class)->middleware('auth');
+Route::get('/user-profile/superuser/find-stream', 'DashboardController@find_stream')->middleware(CheckSuperUser::class)->middleware('auth');
 
 // Coaches profile 
 
@@ -311,3 +320,8 @@ Route::get('/test', function()
 // Club Management Routes
 
 Route::post('/join-club/request', 'ClubController@join_club_request')->middleware('auth');
+
+Route::view('/search', 'search');
+
+Route::get('user/find', 'SearchController@searchUsers')->middleware(CheckAdmin::class)->middleware('auth');
+Route::get('stream/find', 'SearchController@searchStreams')->middleware(CheckSuperuser::class)->middleware('auth');

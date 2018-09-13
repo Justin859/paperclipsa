@@ -1,5 +1,13 @@
 @extends('layouts.app')
 
+@section('meta')
+  <meta property="og:url"           content="https://www.your-domain.com/your-page.html" />
+  <meta property="og:type"          content="website" />
+  <meta property="og:title"         content="PAPERCLIP SOUTH AFRICA" />
+  <meta property="og:description"   content="We give you live and on-demand sports action from club, school and match events." />
+  <meta property="og:image"         content="http://paperclipsa.co.za/images/favicon.jpg" />
+@endsection
+
 @section('header')
 <!-- <script type="text/javascript" src="//player.wowza.com/player/latest/wowzaplayer.min.js"></script> -->
 
@@ -102,6 +110,17 @@
     top: 0px;
   }
 
+  .list-inline-item
+  {
+      vertical-align: middle;
+  }
+
+  .btn-o
+  {
+      margin-top: 10px;
+      padding: 0px;
+  }
+
 </style>
 @endsection
 
@@ -124,6 +143,18 @@
     <div class="row">
         <div class="col-sm-12" style="padding: 0px;">
             <h2 class="main-heading" align="left">{{str_replace("_", " ",$vod->name)}}</h2>
+            <ul class="list-inline float-right">
+                <li class="list-inline-item">
+                <div class="fb-share-button" data-size="large"
+                    data-href="http://www.paperclipsa.co.za/indoor-soccer/{{$vod->id}}/{{$vod->name}}" 
+                    data-layout="button">
+                </div>
+                </li>
+                <li class="list-inline-item">
+                    <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-size="large" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                </li>
+            </ul>
+            
             <p  class="fixture-date-time" align="left">{{$fixture->date_time}}</p>
             <p class="fixture-venue" align="left"><a class="venue-link" href="#">{{"@" . $current_venue->name}}</a></p>
         </div>
@@ -147,11 +178,14 @@
     <div class="row">
         <div class="col-sm-9" style="padding: 0px;">
             <h2 class="main-heading" align="left">{{str_replace("_", " ",$vod->name)}}</h2>
+
             <p  class="fixture-date-time" align="left">{{$fixture->date_time}}</p>
             <p class="fixture-venue" align="left"><a class="venue-link" href="#">{{"@" . $current_venue->name}}</a></p>
         </div>
     </div>
     @endif
+    <div id="fb-root"></div>
+
     </br>
     <div class="row">
         <div class="col-md-12">
@@ -266,7 +300,15 @@
         $team_a_short = shorten_name($fixture->team_a);
         $team_b_short = shorten_name($fixture->team_b);
     ?>
-
+<script>
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.0";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
 @if($fixture->score_tracking)
 
 <script>

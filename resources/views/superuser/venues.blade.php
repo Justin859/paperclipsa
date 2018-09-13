@@ -9,7 +9,7 @@
         color: #ffffff;
     }
     .fa-plug, .fa-trash, .fa-edit, .fa-toggle-on
-    , .fa-toggle-off {
+    , .fa-toggle-off, .fa-chart-bar {
         font-size: 24px;
     }
 
@@ -66,6 +66,7 @@
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">Venue Name</th>
+                    <th scope="col">analytics</th>
                     <th scope="col">Status</th>
                     <th scope="col">Edit</th>
                     <th scope="col">Delete</th>
@@ -83,6 +84,7 @@
                         </div>
                     </div>
                     </td>
+                    <td><a href="/user-profile/superuser/venue/analytics/{{$venue->id}}/{{$venue->name}}" style="color: #FFCC00;"><i class="fas fa-chart-bar"></i></a></td>
                     <td>
                     <form name="form_active{{$key + 1}}" action="/user-profile/superuser/venue/set-active" method="post">
                         @csrf

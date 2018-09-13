@@ -657,6 +657,118 @@ class DashboardController extends Controller
         return redirect()->back();
     }
 
+    // Selling credits
+
+    public function add_credits()
+    {
+
+        return view('admin.sell_credits');
+    }
+
+    public function add_credits_request(Request $request)
+    {
+        $validatedData = $request->validate([
+            'email' => 'required|email|exists:users',
+            'credits' => 'required|numeric|max:999999|min:5'
+        ]);
+
+        $admin_user_account = \Auth::user();
+        $admin_account = \App\Admin::where('user_id', $admin_user_account->id)->first();
+        $user_is_superuser = \App\SuperUser::where('user_id', $user->id)->first();
+
+        $user_account = \App\User::where('email', $request->email)->first();
+        $user_has_balance = \App\AccountBalance::where('user_id', $user_account->id)->first();
+
+        if($user_has_balance)
+        {
+            $user_has_balance->balance_value = (string)((int)$user_has_balance->balance_value + $request->credits);
+            $user_has_balance->save();
+
+        } else {
+            $user_new_account = \App\AccountBalance::create(['user_id' => $user_account->id, 'balance_value' => $request->credits, 'balance_currency' => 'points']);
+        }
+
+        // create credit invoice to venue 
+
+        if(!$user_is_superuser)
+        {
+            $new_invoice = \App\VenueCreditInvoice::create(['venue_id' => $admin_account->venue_id, 'user_id' => $admin_user_account->id, 'user_invoiced' => $user_account->id,
+            'amount_given' => $request->credits, 'date_time' => date("Y-m-d H:i:s")]);
+        }
+
+        \Session::flash('success', $request->credits . ' credits have been added to ' . $user_account->email . ' account.'); 
+
+        return redirect()->back();
+    }
+
+    public function balance_statistics()
+    {
+        $user = \Auth::user();
+        $admin_user = \App\Admin::where('user_id', $user->id)->first();
+
+        $credit_invoices_owed = \App\VenueCreditInvoice::where(['venue_id' => $admin_user->venue_id, 'status' => 'owed'])->get()->sum('amount_given');
+        $credit_invoices_paid = \App\VenueCreditInvoice::where(['venue_id' => $admin_user->venue_id, 'status' => 'paid'])->get()->sum('amount_given');
+
+        $statistics_jan = 0; $statistics_feb = 0; $statistics_mar = 0; $statistics_apr = 0;
+        $statistics_may = 0; $statistics_jun = 0; $statistics_jul = 0; $statistics_aug = 0;
+        $statistics_sep = 0; $statistics_oct = 0; $statistics_nov = 0; $statistics_dec = 0;
+
+        $purchased_streams = \App\IndoorSoccerPurchase::where(['venue_id' => $admin_user->venue_id])->whereYear('created_at', '=', date('Y'))->get(); // Sort by month first..
+        $purchased_streams_value = \App\IndoorSoccerPurchase::where(['venue_id' => $admin_user->venue_id])->whereYear('created_at', '=', date('Y'))->get()->sum('amount_paid'); // Sort by month first..
+
+        foreach($purchased_streams as $stream)
+        {
+            switch (date("m", strtotime($stream->created_at))) {
+                case  "01":
+                    $statistics_jan += $stream->amount_paid;
+                    break;
+                case "02":
+                    $statistics_feb += $stream->amount_paid;
+                    break;
+                case "03":
+                    $statistics_mar += $stream->amount_paid;
+                    break;
+                case "04":
+                    $statistics_apr += $stream->amount_paid;
+                    break;
+                case "05":
+                    $statistics_may += $stream->amount_paid;
+                    break;
+                case "06":
+                    $statistics_jun += $stream->amount_paid;
+                    break;
+                case "07":
+                    $statistics_jul += $stream->amount_paid;
+                    break;
+                case "08":
+                    $statistics_aug += $stream->amount_paid;
+                    break;
+                case "09":
+                    $statistics_sep += $stream->amount_paid;
+                    break;
+                case "10":
+                    $statistics_oct += $stream->amount_paid;
+                    break;
+                case "11":
+                    $statistics_nov += $stream->amount_paid;
+                    break;
+                case "12":
+                    $statistics_dec += $stream->amount_paid;
+                    break;
+                default:
+                    $statistics_jan += $stream->amount_paid;
+            }
+        }
+
+        return view('admin.balance_statistics', ['credit_invoices_owed' => $credit_invoices_owed, 'credit_invoices_paid' => $credit_invoices_paid,
+                                                 'purchased_streams' => $purchased_streams, 'purchased_streams_value' => $purchased_streams_value,
+                                                 'statistics_jan' => $statistics_jan, 'statistics_feb' => $statistics_feb, 'statistics_mar' => $statistics_mar, 'statistics_apr' => $statistics_apr,
+                                                 'statistics_may' => $statistics_may, 'statistics_jun' => $statistics_jun, 'statistics_jul' => $statistics_jul, 'statistics_aug' => $statistics_aug,
+                                                 'statistics_sep' => $statistics_sep, 'statistics_oct' => $statistics_oct, 'statistics_nov' => $statistics_nov, 'statistics_dec' => $statistics_dec, 
+                                                 ]);
+
+    }
+
     // Super User Dashboard
 
     /* 
@@ -1161,6 +1273,230 @@ class DashboardController extends Controller
         } else {
             $admin->update(['active_status' => 'suspended']);
             $admin_user->update(['active_status' => 'suspended']);
+        }
+
+        return redirect()->back();
+    }
+
+    public function venue_anylitics($venue_id, $venue_name)
+    {
+        $venue = \App\Venue::find($venue_id);
+
+        $statistics_jan = 0; $statistics_feb = 0; $statistics_mar = 0; $statistics_apr = 0;
+        $statistics_may = 0; $statistics_jun = 0; $statistics_jul = 0; $statistics_aug = 0;
+        $statistics_sep = 0; $statistics_oct = 0; $statistics_nov = 0; $statistics_dec = 0;
+
+        $invoiced_jan = 0; $invoiced_feb = 0; $invoiced_mar = 0; $invoiced_apr = 0;
+        $invoiced_may = 0; $invoiced_jun = 0; $invoiced_jul = 0; $invoiced_aug = 0;
+        $invoiced_sep = 0; $invoiced_oct = 0; $invoiced_nov = 0; $invoiced_dec = 0;
+
+        $purchased_streams = \App\IndoorSoccerPurchase::where(['venue_id' => $venue_id])->whereYear('created_at', '=', date('Y'))->get(); // Sort by month first..
+        $venue_invoiced = \App\VenueCreditInvoice::where(['venue_id' => $venue_id, 'status' => 'owed'])->whereYear('created_at', '=', date('Y'))->get(); // Sort by month first..
+
+        // Get total paid videos per month.
+
+        foreach($purchased_streams as $stream)
+        {
+            switch (date("m", strtotime($stream->created_at))) {
+                case  "01":
+                    $statistics_jan += $stream->amount_paid;
+                    break;
+                case "02":
+                    $statistics_feb += $stream->amount_paid;
+                    break;
+                case "03":
+                    $statistics_mar += $stream->amount_paid;
+                    break;
+                case "04":
+                    $statistics_apr += $stream->amount_paid;
+                    break;
+                case "05":
+                    $statistics_may += $stream->amount_paid;
+                    break;
+                case "06":
+                    $statistics_jun += $stream->amount_paid;
+                    break;
+                case "07":
+                    $statistics_jul += $stream->amount_paid;
+                    break;
+                case "08":
+                    $statistics_aug += $stream->amount_paid;
+                    break;
+                case "09":
+                    $statistics_sep += $stream->amount_paid;
+                    break;
+                case "10":
+                    $statistics_oct += $stream->amount_paid;
+                    break;
+                case "11":
+                    $statistics_nov += $stream->amount_paid;
+                    break;
+                case "12":
+                    $statistics_dec += $stream->amount_paid;
+                    break;
+                default:
+                    $statistics_jan += $stream->amount_paid;
+            }
+        }
+
+        // Get total invoiced credits per month.
+
+        foreach($venue_invoiced as $invoice)
+        {
+            switch (date("m", strtotime($invoice->created_at))) {
+                case "01":
+                    $invoiced_jan += $invoice->amount_given;
+                    break;
+                case "02":
+                    $invoiced_feb += $invoice->amount_given;
+                    break;
+                case "03":
+                    $invoiced_mar += $invoice->amount_given;
+                    break;
+                case "04":
+                    $invoiced_apr += $invoice->amount_given;
+                    break;
+                case "05":
+                    $invoiced_may += $invoice->amount_given;
+                    break;
+                case "06":
+                    $invoiced_jun += $invoice->amount_given;
+                    break;
+                case "07":
+                    $invoiced_jul += $invoice->amount_given;
+                    break;
+                case "08":
+                    $invoiced_aug += $invoice->amount_given;
+                    break;
+                case "09":
+                    $invoiced_sep += $invoice->amount_given;
+                    break;
+                case "10":
+                    $invoiced_oct += $invoice->amount_given;
+                    break;
+                case "11":
+                    $invoiced_nov += $invoice->amount_given;
+                    break;
+                case "12":
+                    $invoiced_dec += $invoice->amount_given;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return view('superuser.venue_analytics', ['venue' => $venue, 
+                                                 'statistics_jan' => $statistics_jan, 'statistics_feb' => $statistics_feb, 'statistics_mar' => $statistics_mar, 'statistics_apr' => $statistics_apr,
+                                                 'statistics_may' => $statistics_may, 'statistics_jun' => $statistics_jun, 'statistics_jul' => $statistics_jul, 'statistics_aug' => $statistics_aug,
+                                                 'statistics_sep' => $statistics_sep, 'statistics_oct' => $statistics_oct, 'statistics_nov' => $statistics_nov, 'statistics_dec' => $statistics_dec,
+                                                 'invoiced_jan' => $invoiced_jan, 'invoiced_feb' => $invoiced_feb, 'invoiced_mar' => $invoiced_mar, 'invoiced_apr' => $invoiced_apr,
+                                                 'invoiced_may' => $invoiced_may, 'invoiced_jun' => $invoiced_jun, 'invoiced_jul' => $invoiced_jul, 'invoiced_aug' => $invoiced_aug,
+                                                 'invoiced_sep' => $invoiced_sep, 'invoiced_oct' => $invoiced_oct, 'invoiced_nov' => $invoiced_nov, 'invoiced_dec' => $invoiced_dec,
+                                                ]);
+    }
+
+    public function find_stream()
+    {
+
+        return view('superuser.find_stream');
+    }
+
+    public function delete_stream(Request $request)
+    {
+        $validatedData = $request->validate([
+            'stream_name' => 'required',
+            'action' => 'required'
+        ]);
+
+        $stream = \App\Stream::where('name', $request->stream_name)->first();
+        $fixture = \App\Fixture::where('stream_id', $stream->id)->first();
+
+        if($stream and $fixture)
+        {
+            if($request->action == 'stream_only')
+            {
+                $stream_deleted = $stream->delete();
+                $fixture_deleted = $fixture->delete();
+
+                if($stream_deleted and $fixture_deleted)
+                {
+                    \Session::flash('success', 'Stream and Fixture records in the database have been removed.');
+                } else {
+                    \Session::flash('error', 'An error has occured Stream and Fixture records could not be removed from the database.');
+                }
+    
+            } else if($request->action == 'stream_and_file') {
+
+                $ch = curl_init();
+                $data = array("stream_name" => $stream->name, "storage_location" => $stream->storage_location);                                                                    
+                $data_string = json_encode($data); 
+                curl_setopt($ch, CURLOPT_URL,"http://127.0.0.1:5002/remove-stream");
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+                    'Content-Type: application/json',                                                                                
+                    'Content-Length: ' . strlen($data_string))                                                                       
+                );                                  
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,3);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+
+                $server_output = curl_exec($ch);
+                if(curl_getinfo($ch, CURLINFO_HTTP_CODE) == '200')
+                {
+                    $stream_deleted = $stream->delete();
+                    $fixture_deleted = $fixture->delete();
+
+                    if($stream_deleted and $fixture_deleted)
+                    {
+                        \Session::flash('success', 'Stream and Fixture records in the database have been removed.');
+                    } else {
+                        \Session::flash('error', 'An error has occured Stream and Fixture records could not be removed from the database.');
+                    }
+
+                    \Session::flash('success', 'The video file has been removed from the server.');
+
+                } else {
+                    \Session::flash('error', 'There was an error removing the video file. Either the file does not exist anymore or it is curently streaming.');
+                }
+                
+            } else {
+                
+                \Session::flash('error', 'An error has occured. Stream Could not be deleted');
+            }          
+
+                curl_close($ch);
+
+                  
+        } else {
+            \Session::flash('error', 'The stream that you are looking for could not be found in the database.');
+        }
+
+        return redirect()->back();
+    }
+
+    public function venue_paid(Request $request)
+    {
+
+        $venue = \App\Venue::find($request->venue_id);
+        $invoices = \App\VenueCreditInvoice::where(['venue_id' => $venue->id])->whereYear('created_at', '=', date('Y'))->whereMonth('created_at', '=', $request->month)->get();
+        
+        if($invoices->count() and $request->payment_status == "paid")
+        {
+            foreach($invoices as $invoice)
+            {
+                $invoice->update(['status' => 'paid']);
+            }
+
+        } else if($invoices->count() and $request->payment_status == "outstanding") {
+
+            foreach($invoices as $invoice)
+            {
+                $invoice->update(['status' => 'owed']);
+            }
+            
+        } else {
+            \Session::flash('error', 'There are no invoices available for ' . date('F', mktime(0, 0, 0, $request->month, 10)) . " " . date('Y'));
         }
 
         return redirect()->back();

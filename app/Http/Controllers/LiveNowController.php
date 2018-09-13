@@ -17,65 +17,30 @@ class LiveNowController extends Controller
         $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
         $user_points = (int)$account_balance->balance_value;
 
-        $stream_available = false;
         $sufficient_points = false;
 
         if ($video_type == 'action_sport')
         {
-            $user_streams = \App\UserStreams::where('user_id', $user->id)->first();
+            $stream = \App\Stream::find($stream_id);
 
             if ($user_points >= 5)
             {
                 $sufficient_points = true;
             }
     
-            if ($user_streams and $sufficient_points)
+            if ($sufficient_points)
             {
                 $account_balance->balance_value = (string)((int)$user_points - 5);
-                if($user_streams->stream_ids)
-                {
-                    $user_streams->stream_ids = $user_streams->stream_ids.",".$stream_id;
-                } else {
-                    $user_streams->stream_ids = $stream_id;
-                }
-    
-                $user_streams->save();
                 $account_balance->save();
-    
-                $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
-                $user_purchased_streams = $user_streams->stream_ids;
-                $purchased_streams_array = explode(',', $user_purchased_streams);
-    
-                if (in_array((string)$stream_id, $purchased_streams_array))
-                {
-                    $stream_available = true;
-
-                    return redirect()->to($redirect_url);
-                }
-    
-            } else if ($user_points and $sufficient_points) {
-                // Create Row for user streams
-                $new_user_streams = \App\UserStreams::create(['user_id' => $user->id, 'stream_ids' => $stream_id]);
-                $user_streams = \App\UserStreams::where('user_id', $user->id)->first();
-                $account_balance = \App\AccountBalance::where('user_id', $user->id)->first();
-    
-                $account_balance->balance_value = (string)((int)$user_points - 5);
-    
-                $account_balance->save();
-    
-                $user_purchased_streams = $user_streams->stream_ids;
-                $purchased_streams_array = explode(',', $user_purchased_streams);
                 
-                if (in_array((string)$stream_id, $purchased_streams_array))
-                {
-                    $stream_available = true;
-                    return redirect()->to($redirect_url);
-                }
+                $new_purchase = \App\IndoorSoccerPurchase::create(['stream_id' => $stream_id, 'user_id' => $user->id, 'date_purchased' => date('Y:m:d H:i:s'), 'venue_id' => $stream->venue_id, 'amount_paid' => 5]);
     
             } else {
                 // Exception for no account balance
-                $stream_available = false;
+                \Session::flash('error', 'An Error has occured');
             }
+
+            return redirect()->to($redirect_url);
 
         } else if ($video_type == 'event') {
             $user_event_streams = \App\UserEventStream::where('user_id', $user->id)->first();
